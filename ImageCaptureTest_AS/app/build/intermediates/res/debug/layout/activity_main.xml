@@ -1,0 +1,89 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity" >
+    
+    <SurfaceView
+        android:id="@+id/preview"
+       	android:layout_width="fill_parent"
+       	android:layout_height="fill_parent" />
+    
+    <RelativeLayout 
+      	android:layout_width="fill_parent"
+        android:layout_height="200dip"
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical"
+        android:background="#0FFF" >   
+
+	    <EditText
+	        android:id="@+id/editFrames"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:hint="@string/editFrames"
+	        android:inputType="numberSigned|numberDecimal"
+	        android:text="@string/defaultFrames"
+	        android:textStyle="bold" />
+	
+	    <EditText
+	        android:id="@+id/editTime"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_below="@+id/editFrames"
+	        android:hint="@string/editTime"
+	        android:inputType="numberSigned|numberDecimal"
+	        android:text="@string/defaultTime"
+	        android:textStyle="bold" />
+	
+	    <EditText
+	        android:id="@+id/editDist"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_below="@+id/editTime"
+	        android:hint="@string/editDist"
+	        android:inputType="numberSigned|numberDecimal"
+	        android:text="@string/defaultDist"
+	        android:textStyle="bold" />
+
+    </RelativeLayout>
+  
+    <RelativeLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="100dip"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
+        android:background="#0FFF" >
+        <Button
+            android:id="@+id/cancel"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="@string/cancel"
+            android:onClick="onCancelClick" />
+        <Button
+            android:id="@+id/start"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="@string/startTime"
+            android:onClick="onStartTimeClick" />
+        <Button
+            android:id="@+id/startdist"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/start"
+            android:text="@string/startDist"
+            android:onClick="onStartDistClick" />      
+        <Button
+            android:id="@+id/snap"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="@string/snapPic"
+            android:onClick="onSnapClick" />    
+    </RelativeLayout>
+</RelativeLayout><!-- From: file:/Users/bmse/Desktop/ALP/ftl-smartphone/ImageCaptureTest_AS/app/src/main/res/layout/activity_main.xml -->
