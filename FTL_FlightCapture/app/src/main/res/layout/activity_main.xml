@@ -1,0 +1,122 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <SurfaceView
+        android:id="@+id/preview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="200dip"
+        android:layout_alignParentTop="true"
+        android:background="#0FFF"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/editFrames" />
+
+            <EditText
+                android:id="@+id/editFrames"
+                android:layout_width="200dip"
+                android:layout_height="wrap_content"
+                android:hint="@string/editFrames"
+                android:inputType="numberSigned|numberDecimal"
+                android:text="@string/defaultFrames"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/editTime" />
+
+            <EditText
+                android:id="@+id/editTime"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/editTime"
+                android:inputType="numberSigned|numberDecimal"
+                android:text="@string/defaultTime"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/editDist" />
+
+            <EditText
+                android:id="@+id/editDist"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/editDist"
+                android:inputType="numberSigned|numberDecimal"
+                android:text="@string/defaultDist"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="100dip"
+        android:layout_alignParentBottom="true"
+        android:background="#0FFF"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/cancel"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:onClick="onCancelClick"
+            android:text="@string/cancel" />
+
+        <Button
+            android:id="@+id/start"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:onClick="onStartTimeClick"
+            android:text="@string/startTime" />
+
+        <Button
+            android:id="@+id/startdist"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/start"
+            android:layout_centerHorizontal="true"
+            android:onClick="onStartDistClick"
+            android:text="@string/startDist" />
+
+        <Button
+            android:id="@+id/snap"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:onClick="onSnapClick"
+            android:text="@string/snapPic" />
+    </RelativeLayout>
+</RelativeLayout>
