@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/Users/bmse/Desktop/ALP/ftl-smartphone/FlightCapture_AS/app/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/Users/TexMex657/Documents/GitHub/ftl-smartphone__idc/FlightCapture_AS/app/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="app_name">Flight Capture</string>
     <string name="button_capture">Capture</string>
@@ -17,7 +17,7 @@
     <string name="startDist">Start Dist</string>
     <string name="startTime">Start Time</string>
     <string name="title_activity_preview">Preview</string>
-    <!-- From: file:/Users/bmse/Desktop/ALP/ftl-smartphone/FlightCapture_AS/app/src/main/res/values/styles.xml -->
+    <!-- From: file:/C:/Users/TexMex657/Documents/GitHub/ftl-smartphone__idc/FlightCapture_AS/app/src/main/res/values/styles.xml -->
     <eat-comment/>
     <style name="AppBaseTheme" parent="android:Theme.Light">
         <!--
