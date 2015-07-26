@@ -133,7 +133,7 @@ public class MainActivity extends Activity
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
-		
+
 	@Override
 	public void onStart()
 	{
@@ -227,7 +227,58 @@ public class MainActivity extends Activity
 		storeDir = "SingleShot";
 		mCamera.takePicture( this, null, null, this);
 	}
-	
+	public void initCameraParameters()
+    {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo)
+
+        //** INITIALIZE CAMERA PARAMETERS **//
+
+        //Retrieve current camera parameter settings
+        Camera.Parameters params = mCamera.getParameters(); // Request Current Paramaters
+
+        //Edit camera parameter settings
+        params.setAutoExposureLock(true); // Lock Auto Exposure so it can be controlled per snap, CHECK MIN VERSION
+        params.setAutoWhiteBalanceLock(true); // Lock AWB so we can post process the images, CHECK MIN VERSION
+        params.setWhiteBalance("no adjustment"); //this string value could we wrong
+        // Set GPS Altitude: 7/26/2015, waiting for KML group to decide GPS/ALT implementation. Remember to look at current addGpsToImg() etc. implementation
+        params.setFocusMode("FOCUS_MOD_EDOF"); // set to continuous focus mode
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        storeDir = "TimePics_" + timeStamp;// set directory to save file (if external remember to put in manifest file)
+        params.setPictureFormat(32); //32 represents RAW_SENSOR format
+
+        //Set camera settings to modified values
+        mCamera.setParameters(params);
+        //Toast.makeText(getBaseContext(), "Camera Settings Initialized", Toast.LENGTH_SHORT).show();
+
+
+////         //** INITIALIZE GLOBAL VARIABLES **// THIS SHOULD REALLY BE DONE BY ANOTHER GROUP WORKING ON SNAPPING TIMING
+////
+////         //Set varaibles based on time, not distance [heritage code]
+////         STREAM_CAPTURE = true;
+////         DISTANCE = false; // not taking picutures based on distance
+////         FIRST_DISTANCE = false; // not taking pictures based on distance
+////         TOTAL_COUNT = 0; // set frame count to zero
+////         CAMERA_READY = true; // NOT SURE YET
+////
+////         //Read GUI inputs to set remaining variables [heritage code]
+////         try
+////         {
+////             EditText readTime = (EditText) findViewById(R.id.editTime); // get run time from GUI (editTime field)
+////             if (readTime != null)
+////                 TIME_TO_TRAVEL = Float.parseFloat(readTime.getText().toString()); // set time to travel, global
+////             EditText readFrames = (EditText) findViewById(R.id.editFrames); // get number of frames from GUI
+////             if (readFrames != null)
+////                 TOTAL_FRAMES = Integer.parseInt(readFrames.getText().toString()); // set max frame count, global
+////         } catch (NumberFormatException nfe) { // If GUI inputs are bad...
+////             // Catch and continue with defaults
+////         }
+////         Toast.makeText(getBaseContext(), "Time Mode", Toast.LENGTH_SHORT).show();
+////
+////
+////         //** START CAPTUREING PHOTOS **//
+////         continuousCapture2(); // Here is where another group will take over (OBJ 2 will edit the onPictureTaken() method (it's and override method)
+    }
+
+
 	public void onStartTimeClick(View v)
 	{
 		//Snap a stream of photos based on a time interval
