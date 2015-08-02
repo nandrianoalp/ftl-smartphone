@@ -68,6 +68,12 @@ public class MainActivity extends Activity
 	public static boolean DISTANCE = false;
 	public static float DISTANCE_TO_TRAVEL = 2;	//Distance in meters
 	public static boolean FIRST_DISTANCE = false;
+
+    public int prevExposureCompensationValue;
+    public String prevIsoValue;
+    public int maxExposureCompensationValue;
+    public int minExposureCompensationValue;
+    public int testBit = 0; // used to test camera controls without a randomness
 	
 //	PowerManager pm;
 //	PowerManager.WakeLock mWakeLock;
@@ -227,55 +233,78 @@ public class MainActivity extends Activity
 		storeDir = "SingleShot";
 		mCamera.takePicture( this, null, null, this);
 	}
+
 	public void initCameraParameters()
-    {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo)
+    {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo) [Note: I believe that the preview should be started first]
 
         //** INITIALIZE CAMERA PARAMETERS **//
 
         //Retrieve current camera parameter settings
         Camera.Parameters params = mCamera.getParameters(); // Request Current Paramaters
 
-        //Edit camera parameter settings
-        params.setAutoExposureLock(true); // Lock Auto Exposure so it can be controlled per snap, CHECK MIN VERSION
-        params.setAutoWhiteBalanceLock(true); // Lock AWB so we can post process the images, CHECK MIN VERSION
-        params.setWhiteBalance("no adjustment"); //this string value could we wrong
+        // Edit camera parameter settings
+        // params.setAutoExposureLock(true); // Lock Auto Exposure so it can be controlled per snap, CHECK MIN VERSION
+        // params.setAutoWhiteBalanceLock(true); // Lock AWB so we can post process the images, CHECK MIN VERSION
+        // params.setWhiteBalance("no adjustment"); //this string value could we wrong, DECIDED TO USE AUTO WHITE BALANCE
         // Set GPS Altitude: 7/26/2015, waiting for KML group to decide GPS/ALT implementation. Remember to look at current addGpsToImg() etc. implementation
         params.setFocusMode("FOCUS_MOD_EDOF"); // set to continuous focus mode
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         storeDir = "TimePics_" + timeStamp;// set directory to save file (if external remember to put in manifest file)
-        params.setPictureFormat(32); //32 represents RAW_SENSOR format
+        params.setPictureFormat(256); //256 represents JPEG format, IS THIS NECESSARY?
+
+        maxExposureCompensationValue = params.getMaxExposureCompensation();
+        minExposureCompensationValue = params.getMinExposureCompensation();
+
+        recordCameraParameters();
 
         //Set camera settings to modified values
         mCamera.setParameters(params);
         //Toast.makeText(getBaseContext(), "Camera Settings Initialized", Toast.LENGTH_SHORT).show();
+    }
 
 
-////         //** INITIALIZE GLOBAL VARIABLES **// THIS SHOULD REALLY BE DONE BY ANOTHER GROUP WORKING ON SNAPPING TIMING
-////
-////         //Set varaibles based on time, not distance [heritage code]
-////         STREAM_CAPTURE = true;
-////         DISTANCE = false; // not taking picutures based on distance
-////         FIRST_DISTANCE = false; // not taking pictures based on distance
-////         TOTAL_COUNT = 0; // set frame count to zero
-////         CAMERA_READY = true; // NOT SURE YET
-////
-////         //Read GUI inputs to set remaining variables [heritage code]
-////         try
-////         {
-////             EditText readTime = (EditText) findViewById(R.id.editTime); // get run time from GUI (editTime field)
-////             if (readTime != null)
-////                 TIME_TO_TRAVEL = Float.parseFloat(readTime.getText().toString()); // set time to travel, global
-////             EditText readFrames = (EditText) findViewById(R.id.editFrames); // get number of frames from GUI
-////             if (readFrames != null)
-////                 TOTAL_FRAMES = Integer.parseInt(readFrames.getText().toString()); // set max frame count, global
-////         } catch (NumberFormatException nfe) { // If GUI inputs are bad...
-////             // Catch and continue with defaults
-////         }
-////         Toast.makeText(getBaseContext(), "Time Mode", Toast.LENGTH_SHORT).show();
-////
-////
-////         //** START CAPTUREING PHOTOS **//
-////         continuousCapture2(); // Here is where another group will take over (OBJ 2 will edit the onPictureTaken() method (it's and override method)
+    public void recordCameraParameters()
+    { // Called immediately after the photo is taken to record current parameters (b/ potentially in constant flux during preview)
+        Camera.Parameters params = mCamera.getParameters();
+        prevExposureCompensationValue = params.getExposureCompensation();
+        prevIsoValue = params.get("iso");
+        Toast.makeText(getBaseContext(), prevExposureCompensationValue, Toast.LENGTH_SHORT).show(); // debugging purposes
+        Toast.makeText(getBaseContext(), prevIsoValue, Toast.LENGTH_SHORT).show(); // debugging purposes
+    }
+
+    public void updateCameraParameters()
+    {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo)
+        evaluatePreviousImage(); // should return new values for exposure comp and iso
+
+        Camera.Parameters params = mCamera.getParameters();
+        if (testBit > 0){
+            params.set("iso", "200");
+            testBit = 0;
+        } else {
+            params.set("iso", "1600");
+            testBit = 1;
+        }
+        if (prevExposureCompensationValue == minExposureCompensationValue) {
+            params.setExposureCompensation(maxExposureCompensationValue);
+        } else {
+            params.setExposureCompensation(prevExposureCompensationValue - 1); // params.getExposureCompensationStep());
+        }
+
+        mCamera.setParameters(params);
+
+        Camera.Parameters testParams = mCamera.getParameters();
+        Toast.makeText(getBaseContext(), testParams.getExposureCompensation(), Toast.LENGTH_SHORT).show(); // debugging purposes
+        Toast.makeText(getBaseContext(), testParams.get("iso"), Toast.LENGTH_SHORT).show(); // debugging purposes
+    }
+
+    public void evaluatePreviousImage()
+    { // Once the evaluation algorithms are settled to measure jitter, noise, and exposure we will implement here
+
+        // open/find previous image, how to get previous image?
+
+        // Implement algorithm or call library here
+
+        return;// calculate and return new exposure comp and iso values
     }
 
 
