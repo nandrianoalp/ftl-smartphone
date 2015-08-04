@@ -11,7 +11,7 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="200dip"
+        android:layout_height="250dip"
         android:layout_alignParentTop="true"
         android:background="#0FFF"
         android:orientation="vertical">
@@ -77,6 +77,68 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/readXOrient" />
+
+            <EditText
+                android:id="@+id/readXOrient"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/readXOrient"
+                android:inputType="numberSigned|numberDecimal"
+                android:text="@string/defaultOrient"
+                android:textStyle="bold"
+                android:editable="false" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/readYOrient" />
+
+            <EditText
+                android:id="@+id/readYOrient"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/readYOrient"
+                android:inputType="numberSigned|numberDecimal"
+                android:text="@string/defaultOrient"
+                android:textStyle="bold"
+                android:editable="false" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/readZOrient" />
+
+            <EditText
+                android:id="@+id/readXOrient"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/readZOrient"
+                android:inputType="numberSigned|numberDecimal"
+                android:text="@string/defaultOrient"
+                android:textStyle="bold"
+                android:editable="false" />
+        </LinearLayout>
     </LinearLayout>
 
     <RelativeLayout

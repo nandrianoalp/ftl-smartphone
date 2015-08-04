@@ -5,13 +5,11 @@
       <config />
     </shared>
   </component>
-  <component name="AndroidLogFilters">
-    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
-  </component>
   <component name="ChangeListManager">
     <list default="true" id="36bda8da-6412-4fb0-95c9-a536d95edc24" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/cache.properties.lock" afterPath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/cache.properties.lock" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="FlightCapture_AS.iws" />
@@ -33,7 +31,20 @@
   <component name="ExternalProjectsManager">
     <system id="GRADLE">
       <state>
-        <projects_view />
+        <projects_view>
+          <tree_state>
+            <PATH>
+              <PATH_ELEMENT>
+                <option name="myItemId" value="" />
+                <option name="myItemType" value="com.intellij.openapi.externalSystem.view.ExternalProjectsStructure$RootNode" />
+              </PATH_ELEMENT>
+              <PATH_ELEMENT>
+                <option name="myItemId" value="FlightCapture_AS" />
+                <option name="myItemType" value="com.intellij.openapi.externalSystem.view.ProjectNode" />
+              </PATH_ELEMENT>
+            </PATH>
+          </tree_state>
+        </projects_view>
       </state>
     </system>
   </component>
@@ -44,14 +55,46 @@
     <leaf>
       <file leaf-file-name="activity_main.xml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
-          <provider editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
           <provider selected="true" editor-type-id="android-designer">
             <state />
+          </provider>
+          <provider editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="137" column="30" selection-start-line="137" selection-start-column="30" selection-end-line="137" selection-end-column="30" />
+              <folding>
+                <element signature="e#928#948#0" expanded="true" />
+                <element signature="e#1148#1168#0" expanded="true" />
+                <element signature="e#1261#1284#0" expanded="true" />
+                <element signature="e#1677#1695#0" expanded="true" />
+                <element signature="e#1898#1916#0" expanded="true" />
+                <element signature="e#2009#2030#0" expanded="true" />
+                <element signature="e#2422#2440#0" expanded="true" />
+                <element signature="e#2643#2661#0" expanded="true" />
+                <element signature="e#2754#2775#0" expanded="true" />
+                <element signature="e#3167#3188#0" expanded="true" />
+                <element signature="e#3394#3415#0" expanded="true" />
+                <element signature="e#3508#3531#0" expanded="true" />
+                <element signature="e#3964#3985#0" expanded="true" />
+                <element signature="e#4191#4212#0" expanded="true" />
+                <element signature="e#4305#4328#0" expanded="true" />
+                <element signature="e#4761#4782#0" expanded="true" />
+                <element signature="e#4988#5009#0" expanded="true" />
+                <element signature="e#5748#5764#0" expanded="true" />
+                <element signature="e#6035#6054#0" expanded="true" />
+                <element signature="e#6375#6394#0" expanded="true" />
+                <element signature="e#6659#6676#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="strings.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-9.84">
+              <caret line="21" column="43" selection-start-line="21" selection-start-column="43" selection-end-line="21" selection-end-column="43" />
+              <folding />
+            </state>
           </provider>
         </entry>
       </file>
@@ -1320,6 +1363,7 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
       </list>
     </option>
   </component>
@@ -1327,8 +1371,8 @@
     <order />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="13" />
-    <option name="y" value="47" />
+    <option name="x" value="9" />
+    <option name="y" value="34" />
     <option name="width" value="1346" />
     <option name="height" value="728" />
   </component>
@@ -1355,13 +1399,36 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scratches" />
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="AndroidView">
         <subPane>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="FlightCapture_AS" />
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Gradle Scripts" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidBuildScriptsGroupNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="FlightCapture_AS" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="values" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderTypeNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
@@ -1408,9 +1475,8 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
+      <pane id="Scratches" />
       <pane id="ProjectPane" />
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1418,6 +1484,7 @@
     <property name="ANDROID_EXTENDED_DEVICE_CHOOSER_SERIALS" value="9d629b88" />
     <property name="ANDROID_EXTENDED_DEVICE_CHOOSER_AVD" value="Samsung_Galaxy_S3_IceCream_API_15" />
     <property name="FullScreen" value="false" />
+    <property name="UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager2.WIDTH" value="275" />
   </component>
   <component name="RunManager" selected="Android Application.app">
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
@@ -1570,23 +1637,24 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="13" y="47" width="1346" height="728" extended-state="0" />
-    <editor active="false" />
+    <frame x="9" y="34" width="1346" height="728" extended-state="1" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32867134" sideWeight="0.4968896" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32867134" sideWeight="0.5093313" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32867134" sideWeight="0.5155521" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32867134" sideWeight="0.49377915" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32867134" sideWeight="0.49066874" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32867134" sideWeight="0.4844479" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.13919128" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1618,25 +1686,143 @@
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+      <provider selected="true" editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#928#948#0" expanded="true" />
+            <element signature="e#1148#1168#0" expanded="true" />
+            <element signature="e#1261#1284#0" expanded="true" />
+            <element signature="e#1677#1695#0" expanded="true" />
+            <element signature="e#1898#1916#0" expanded="true" />
+            <element signature="e#2009#2030#0" expanded="true" />
+            <element signature="e#2422#2440#0" expanded="true" />
+            <element signature="e#2643#2661#0" expanded="true" />
+            <element signature="e#2754#2775#0" expanded="true" />
+            <element signature="e#3167#3188#0" expanded="true" />
+            <element signature="e#3394#3415#0" expanded="true" />
+            <element signature="e#3508#3531#0" expanded="true" />
+            <element signature="e#3964#3985#0" expanded="true" />
+            <element signature="e#4191#4212#0" expanded="true" />
+            <element signature="e#4305#4328#0" expanded="true" />
+            <element signature="e#4761#4782#0" expanded="true" />
+            <element signature="e#4988#5009#0" expanded="true" />
+            <element signature="e#5748#5764#0" expanded="true" />
+            <element signature="e#6035#6054#0" expanded="true" />
+            <element signature="e#6375#6394#0" expanded="true" />
+            <element signature="e#6659#6676#0" expanded="true" />
+          </folding>
         </state>
-      </provider>
-      <provider selected="true" editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+      <provider selected="true" editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#928#948#0" expanded="true" />
+            <element signature="e#1148#1168#0" expanded="true" />
+            <element signature="e#1261#1284#0" expanded="true" />
+            <element signature="e#1677#1695#0" expanded="true" />
+            <element signature="e#1898#1916#0" expanded="true" />
+            <element signature="e#2009#2030#0" expanded="true" />
+            <element signature="e#2422#2440#0" expanded="true" />
+            <element signature="e#2643#2661#0" expanded="true" />
+            <element signature="e#2754#2775#0" expanded="true" />
+            <element signature="e#3167#3188#0" expanded="true" />
+            <element signature="e#3394#3415#0" expanded="true" />
+            <element signature="e#3508#3531#0" expanded="true" />
+            <element signature="e#3964#3985#0" expanded="true" />
+            <element signature="e#4191#4212#0" expanded="true" />
+            <element signature="e#4305#4328#0" expanded="true" />
+            <element signature="e#4761#4782#0" expanded="true" />
+            <element signature="e#4988#5009#0" expanded="true" />
+            <element signature="e#5748#5764#0" expanded="true" />
+            <element signature="e#6035#6054#0" expanded="true" />
+            <element signature="e#6375#6394#0" expanded="true" />
+            <element signature="e#6659#6676#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+      <provider selected="true" editor-type-id="android-designer">
+        <state />
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#928#948#0" expanded="true" />
+            <element signature="e#1148#1168#0" expanded="true" />
+            <element signature="e#1261#1284#0" expanded="true" />
+            <element signature="e#1677#1695#0" expanded="true" />
+            <element signature="e#1898#1916#0" expanded="true" />
+            <element signature="e#2009#2030#0" expanded="true" />
+            <element signature="e#2422#2440#0" expanded="true" />
+            <element signature="e#2643#2661#0" expanded="true" />
+            <element signature="e#2754#2775#0" expanded="true" />
+            <element signature="e#3167#3188#0" expanded="true" />
+            <element signature="e#3394#3415#0" expanded="true" />
+            <element signature="e#3508#3531#0" expanded="true" />
+            <element signature="e#3964#3985#0" expanded="true" />
+            <element signature="e#4191#4212#0" expanded="true" />
+            <element signature="e#4305#4328#0" expanded="true" />
+            <element signature="e#4761#4782#0" expanded="true" />
+            <element signature="e#4988#5009#0" expanded="true" />
+            <element signature="e#5748#5764#0" expanded="true" />
+            <element signature="e#6035#6054#0" expanded="true" />
+            <element signature="e#6375#6394#0" expanded="true" />
+            <element signature="e#6659#6676#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-9.84">
+          <caret line="21" column="43" selection-start-line="21" selection-start-column="43" selection-end-line="21" selection-end-column="43" />
           <folding />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
       <provider selected="true" editor-type-id="android-designer">
         <state />
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="137" column="30" selection-start-line="137" selection-start-column="30" selection-end-line="137" selection-end-column="30" />
+          <folding>
+            <element signature="e#928#948#0" expanded="true" />
+            <element signature="e#1148#1168#0" expanded="true" />
+            <element signature="e#1261#1284#0" expanded="true" />
+            <element signature="e#1677#1695#0" expanded="true" />
+            <element signature="e#1898#1916#0" expanded="true" />
+            <element signature="e#2009#2030#0" expanded="true" />
+            <element signature="e#2422#2440#0" expanded="true" />
+            <element signature="e#2643#2661#0" expanded="true" />
+            <element signature="e#2754#2775#0" expanded="true" />
+            <element signature="e#3167#3188#0" expanded="true" />
+            <element signature="e#3394#3415#0" expanded="true" />
+            <element signature="e#3508#3531#0" expanded="true" />
+            <element signature="e#3964#3985#0" expanded="true" />
+            <element signature="e#4191#4212#0" expanded="true" />
+            <element signature="e#4305#4328#0" expanded="true" />
+            <element signature="e#4761#4782#0" expanded="true" />
+            <element signature="e#4988#5009#0" expanded="true" />
+            <element signature="e#5748#5764#0" expanded="true" />
+            <element signature="e#6035#6054#0" expanded="true" />
+            <element signature="e#6375#6394#0" expanded="true" />
+            <element signature="e#6659#6676#0" expanded="true" />
+          </folding>
+        </state>
       </provider>
     </entry>
   </component>
