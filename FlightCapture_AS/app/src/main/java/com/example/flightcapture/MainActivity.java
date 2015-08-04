@@ -39,21 +39,13 @@ import android.widget.Toast;
 
 
 public class MainActivity extends Activity 
-		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback, SensorEventListener {
-	
-	//private static final String JPEG_FILE_PREFIX = "img";
-	//private static final String JPEG_FILE_SUFFIX = ".jpg";
-	//String mCurrentPhotoPath = "";
-	
-	//private static final int REQUEST_IMAGE = 100;
-	//ImageView imageView;
-	
+		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback {
+
 	private static final String TAG = "MyActivity";
 		
 	public static final int MEDIA_TYPE_IMAGE = 1;
 	public static final int MEDIA_TYPE_VIDEO = 2;
-//	private static final int LOOPTIMEOUT = 100000;	//In milliseconds
-	
+
 	private static String storeDir = "FlightCapture";
 	private static boolean CAMERA_READY = true;
 	private static boolean STREAM_CAPTURE = false;
@@ -69,21 +61,14 @@ public class MainActivity extends Activity
 	public static float DISTANCE_TO_TRAVEL = 2;	//Distance in meters
 	public static boolean FIRST_DISTANCE = false;
 	
-//	PowerManager pm;
-//	PowerManager.WakeLock mWakeLock;
-	
 	Camera mCamera;
-	//SurfaceView mPreview;
     SurfaceView mSurfaceView;
     SurfaceHolder mHolder;
     
     LocationManager locationManager;
     Location currentLocation, previousLocation;
     TextView locationView;
-    
-    private SensorManager mSensorManager;
-    private Sensor mSensor;
-    
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -99,33 +84,15 @@ public class MainActivity extends Activity
         {
         	safeCameraOpen(0);
         }
-		//imageView = (ImageView)findViewById(R.id.image);
-        
-//        locationView = new TextView(this);
-//        setContentView(locationView);
         
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        //LocationProvider provider = locationManager.getProvider(LocationManager.GPS_PROVIDER);
-        
-        // Might need to use WakeLock to keep the app going 
-//        pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-//        mWakeLock = pm.newWakeLock(
-//                PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG);
-//        mWakeLock.acquire();    // Keep the screen on and the activity alive    
-        
+
         // For now I can use the keep screen on flag and leave in portrait to keep the app working
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);		// Band-aid
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);	// Band-aid	
-        
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        List<Sensor> deviceSensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
-//        for(int i=0; i < deviceSensors.size(); i++) {
-//        		mSensor = deviceSensors.get(i);
-//        		String temp = mSensor.getName();
-//            	Toast.makeText(this.getBaseContext(), temp, Toast.LENGTH_LONG).show();
-//        }        
-        //mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);	// Band-aid
+
 	}
+
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -138,8 +105,6 @@ public class MainActivity extends Activity
 	public void onStart()
 	{
 		super.onStart();
-//		safeCameraOpen(0);
-//		safeLocationStart();
 	}
 	
 	@Override
@@ -148,7 +113,6 @@ public class MainActivity extends Activity
 		super.onResume();
 		safeCameraOpen(0);
 		safeLocationStart();
-		//mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 	
 	@Override
@@ -157,15 +121,12 @@ public class MainActivity extends Activity
 		super.onPause();
 		stopPreviewAndFreeCamera();
 		locationManager.removeUpdates(listener);
-		//mSensorManager.unregisterListener(this);
 	}
 	
 	@Override
 	public void onStop()
 	{
 		super.onStop();
-//		stopPreviewAndFreeCamera();
-//		locationManager.removeUpdates(listener);
 	}
 	
 	@Override
@@ -174,7 +135,6 @@ public class MainActivity extends Activity
 		super.onDestroy();
 		stopPreviewAndFreeCamera();
 		locationManager.removeUpdates(listener);
-//		mWakeLock.release();
 	}
 	
 	private boolean safeCameraOpen(int id) {
@@ -184,7 +144,6 @@ public class MainActivity extends Activity
 	        releaseCameraAndPreview();
 	        mCamera = Camera.open();		// Override 'id' and set to first back facing camera
 	        qOpened = (mCamera != null);
-	        //mCamera.enableShutterSound(false);
 	    } catch (Exception e) {
 	        Log.e(getString(R.string.app_name), "failed to open Camera");
 	        e.printStackTrace();
@@ -194,8 +153,7 @@ public class MainActivity extends Activity
 	}
 	
 	private void releaseCameraAndPreview() {
-	    //mPreview.setCamera(null);
-		//setCamera(null);
+
 	    if (mCamera != null) {
 	        mCamera.release();
 	        mCamera = null;
@@ -287,8 +245,7 @@ public class MainActivity extends Activity
 		long prevTime = System.currentTimeMillis();	// Time at loop start
 		long currentTime;
 		if (DISTANCE == true) {	//Snap a series of photos based on distance traveled
-			//String temp = "Distance " + Integer.toString(TOTAL_COUNT);
-			//Toast.makeText(getBaseContext(), temp, Toast.LENGTH_SHORT).show();
+
 			if ((CAMERA_READY == true) && (FIRST_DISTANCE == false)) {
 				TOTAL_COUNT++;
 				CAMERA_READY = false;
@@ -311,7 +268,7 @@ public class MainActivity extends Activity
 	@Override
 	public void onShutter()
 	{
-		//Toast.makeText(this,  "Click!", Toast.LENGTH_SHORT).show();
+
 	}
 	
 	@Override
@@ -319,7 +276,6 @@ public class MainActivity extends Activity
 	{
 		//Add GPS properties to image
 		addGpsToImg();
-		//Toast.makeText(getBaseContext(), "onPictureTaken", Toast.LENGTH_SHORT).show();
 		
 		//Store the picture
         File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
@@ -355,14 +311,10 @@ public class MainActivity extends Activity
 		List<Camera.Size> prevsizes = params.getSupportedPreviewSizes();
 		Camera.Size prevselected = prevsizes.get(0);
 		params.setPreviewSize(prevselected.width, prevselected.height);
-		
-		//List<Camera.Size> imgsizes = params.getSupportedPictureSizes();
-		//Camera.Size imgselected = imgsizes.get(imgsizes.size()-1) );	// Near full size
-		//params.setPictureSize(imgselected.width, imgselected.height);
+
 		params.setPictureSize(3264, 2448);		// Hard-coded image size to Galaxy S3		
 		params.setJpegQuality(100);
-		
-		//addGpsToImg();
+
 		mCamera.setParameters(params);		
         mCamera.setDisplayOrientation(90);
 		mCamera.startPreview();
@@ -396,8 +348,6 @@ public class MainActivity extends Activity
 			params.setGpsLatitude(currentLocation.getLatitude());
 			params.setGpsLongitude(currentLocation.getLongitude());
 			params.setGpsTimestamp(currentLocation.getTime()/1000);		// setGpsTimestamp takes seconds, not milliseconds (returned by getTime()
-			//params.setGpsProcessingMethod(currentLocation.getProvider());
-			//Toast.makeText(getBaseContext(), "Added GPS data", Toast.LENGTH_SHORT).show();
 		}		
 		mCamera.setParameters(params);
 	}
@@ -411,10 +361,7 @@ public class MainActivity extends Activity
 	              Environment.DIRECTORY_PICTURES), storeDir);
 	    // This location works best if you want the created images to be shared
 	    // between applications and persist after your app has been uninstalled.
-	    
-	    //String temp = "Stored at: " + mediaStorageDir.toString();
-	    //Toast.makeText(context,  temp, Toast.LENGTH_SHORT).show();
-	    
+
 	    // Create the storage directory if it does not exist
 	    if (! mediaStorageDir.exists()){
 	        if (! mediaStorageDir.mkdirs()){
@@ -466,13 +413,11 @@ public class MainActivity extends Activity
 	    
 	    //Get a cached location, if it exists
 	    currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-	    //previousLocation = currentLocation;
-	    //updateGPSDisplay();
+
 	    //Register for updates
 	    int minTime = TIME_BETWEEN_GPS;
 	    float minDist = 0;
 	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDist, listener);
-	    //Toast.makeText(getBaseContext(), "safeLocationStart", Toast.LENGTH_SHORT).show();
 	}
 	    
 	private final LocationListener listener = new LocationListener() {
@@ -485,8 +430,7 @@ public class MainActivity extends Activity
 	    		return;		//Skip routine if location is invalid
 	    	if (previousLocation == null)
 	    		previousLocation = currentLocation;			// Prevents a capture if null
-	    	//updateGPSDisplay();
-	    	//Toast.makeText(getBaseContext(), "onLocationChanged", Toast.LENGTH_SHORT).show();
+
 	    	float[] dist = {0};
 	    	float distance = 0;
 	    	if ((DISTANCE == true) && (STREAM_CAPTURE == true)) {
@@ -498,11 +442,9 @@ public class MainActivity extends Activity
 		    		FIRST_DISTANCE = false;
 		    		continuousCapture();
 		    	} else {	// Makes sure first distance has succeeded
-//	    			Location.distanceBetween(previousLocation.getLatitude(),previousLocation.getLongitude(), 
-//    						currentLocation.getLatitude(), currentLocation.getLongitude(), dist);
-    				//Toast.makeText(getBaseContext(), "Made it", Toast.LENGTH_SHORT).show();
+
     				distance = currentLocation.distanceTo(previousLocation);
-//    			    if (dist[0] > DISTANCE_TO_TRAVEL) {
+
     	    		if (distance > DISTANCE_TO_TRAVEL) {	
     	    			String temp = "Accuracy = " + Float.toString(currentLocation.getAccuracy());
     		    		Toast.makeText(getBaseContext(), temp, Toast.LENGTH_SHORT).show();
@@ -617,89 +559,3 @@ public class MainActivity extends Activity
 	}
 	
 }
-
-
-//////////////// ARCHIVED FUNCTIONS ///////////////
-/*	
-protected void onActivityResult(int requestCode, int resultCode, Intent data)
-{
-	if(requestCode == REQUEST_IMAGE && resultCode == Activity.RESULT_OK)
-	{
-		//Process and display the image
-		Bitmap userImage = (Bitmap)data.getExtras().get("data");
-		imageView.setImageBitmap(userImage);
-	}
-}
-
-public void takePicIntent(View view)
-{
-	Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-	startActivityForResult(intent, REQUEST_IMAGE);
-}
-*/	
-
-/*
-public void dispatchTakePictureIntent(View view) {		// fn(int actionCode)
-	int actionCode = 100;		// Temporary hard-code
-    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-   try 
-   {
-    	File f = createImageFile();
-	    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
-	    startActivityForResult(takePictureIntent, actionCode);
-	    //galleryAddPic();
-    } 
-    catch (IOException ie)
-    {
-    	// Do Nothing
-    }
-
-}
-
-public static boolean isIntentAvailable(Context context, String action) {
-    final PackageManager packageManager = context.getPackageManager();
-    final Intent intent = new Intent(action);
-    List<ResolveInfo> list =
-            packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-    return list.size() > 0;
-}
-*/	
-/*	
-private File createImageFile() throws IOException {
-    // Create an image file name
-    String timeStamp = 
-        new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-    String imageFileName = JPEG_FILE_PREFIX + timeStamp;
-    File image = File.createTempFile(
-        imageFileName, 
-        JPEG_FILE_SUFFIX, 
-        getAlbumDir()
-    );
-    mCurrentPhotoPath = image.getAbsolutePath();
-    return image;
-}
-
-private File getAlbumDir() {
-	File storageDir = new File(
-		    Environment.getExternalStoragePublicDirectory(
-		        Environment.DIRECTORY_PICTURES
-		    ), 
-		    getAlbumName()
-		);
-	return storageDir;
-}
-
-private String getAlbumName() {
-	String albumDir = "ScanImages";
-	return albumDir;		// Still need to decide on a reasonable album name
-}
-*/	
-/*	
-private void galleryAddPic() {
-    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-    File f = new File(mCurrentPhotoPath);
-    Uri contentUri = Uri.fromFile(f);
-    mediaScanIntent.setData(contentUri);
-    this.sendBroadcast(mediaScanIntent);
-}
-*/
