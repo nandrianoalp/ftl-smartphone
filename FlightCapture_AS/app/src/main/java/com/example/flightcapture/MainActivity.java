@@ -16,10 +16,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -33,10 +29,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-
-
 
 public class MainActivity extends Activity 
 		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback {
@@ -67,7 +60,6 @@ public class MainActivity extends Activity
     
     LocationManager locationManager;
     Location currentLocation, previousLocation;
-    TextView locationView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +74,7 @@ public class MainActivity extends Activity
 		
         if (checkCameraHardware(this))
         {
-        	safeCameraOpen(0);
+        	safeCameraOpen(false);
         }
         
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -111,7 +103,7 @@ public class MainActivity extends Activity
 	public void onResume()
 	{
 		super.onResume();
-		safeCameraOpen(0);
+		safeCameraOpen(false);
 		safeLocationStart();
 	}
 	
@@ -137,8 +129,7 @@ public class MainActivity extends Activity
 		locationManager.removeUpdates(listener);
 	}
 	
-	private boolean safeCameraOpen(int id) {
-	    boolean qOpened = false;
+	private boolean safeCameraOpen(boolean qOpened) {
 	  
 	    try {
 	        releaseCameraAndPreview();
@@ -237,16 +228,15 @@ public class MainActivity extends Activity
 	
 	public void continuousCapture()
 	{
-		if (TOTAL_FRAMES == 0) {	//Continue
-		} else if (TOTAL_COUNT >= TOTAL_FRAMES) {
+		if (TOTAL_COUNT >= TOTAL_FRAMES) {
 			return; // Done
 		}
 		
 		long prevTime = System.currentTimeMillis();	// Time at loop start
 		long currentTime;
-		if (DISTANCE == true) {	//Snap a series of photos based on distance traveled
+		if (DISTANCE) {	//Snap a series of photos based on distance traveled
 
-			if ((CAMERA_READY == true) && (FIRST_DISTANCE == false)) {
+			if (CAMERA_READY && !FIRST_DISTANCE) {
 				TOTAL_COUNT++;
 				CAMERA_READY = false;
 				mCamera.takePicture( this, null, null, this);
@@ -254,7 +244,7 @@ public class MainActivity extends Activity
 		} else {	// DISTANCE == false, Snap a series of photos based on time passed								
 			while(true) {
 				currentTime = System.currentTimeMillis();
-				if (((currentTime - prevTime) > TIME_TO_TRAVEL) && (CAMERA_READY == true)) {	// Not the right way to do this
+				if (((currentTime - prevTime) > TIME_TO_TRAVEL) && CAMERA_READY) {	// Not the right way to do this
 					TOTAL_COUNT++;
 					CAMERA_READY = false;
 					mCamera.takePicture( this, null, null, this);
@@ -297,7 +287,7 @@ public class MainActivity extends Activity
 		//Must restart preview
 		camera.startPreview();
 		CAMERA_READY = true;
-		if ((DISTANCE == false) && (STREAM_CAPTURE == true))
+		if (!DISTANCE && STREAM_CAPTURE)
 		{
 			continuousCapture();
 		}
@@ -431,13 +421,12 @@ public class MainActivity extends Activity
 	    	if (previousLocation == null)
 	    		previousLocation = currentLocation;			// Prevents a capture if null
 
-	    	float[] dist = {0};
 	    	float distance = 0;
-	    	if ((DISTANCE == true) && (STREAM_CAPTURE == true)) {
-	    		//Toast.makeText(getBaseContext(), "Comparing location...", Toast.LENGTH_SHORT).show();
-	    		if (FIRST_DISTANCE == true) {
+	    	if (DISTANCE && STREAM_CAPTURE) {
+
+	    		if (FIRST_DISTANCE) {
 		    		Toast.makeText(getBaseContext(), "First!", Toast.LENGTH_SHORT).show();
-	    			//updateGPSDisplay();
+
 		    		previousLocation = currentLocation;
 		    		FIRST_DISTANCE = false;
 		    		continuousCapture();
@@ -465,19 +454,7 @@ public class MainActivity extends Activity
 	    @Override
 	    public void onStatusChanged(String provider, int status, Bundle extras) {}
 	};
-	
-	  @Override
-	  public final void onAccuracyChanged(Sensor sensor, int accuracy) {
-	    // Do something here if sensor accuracy changes.
-	  }
 
-	  @Override
-	  public final void onSensorChanged(SensorEvent event) {
-	    // The light sensor returns a single value.
-	    // Many sensors return 3 values, one for each axis.
-	    float lux = event.values[0];
-	    // Do something with this sensor value.
-	  }
 
 	private void enableLocationSettings() {
 	    Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -492,16 +469,8 @@ public class MainActivity extends Activity
 	        return false;	// no camera on this device
 	    }
 	}
-    
-	//Update text view
-	private void updateGPSDisplay() {
-		if(currentLocation == null) {
-			Toast.makeText(getBaseContext(),  "Determining location...", Toast.LENGTH_SHORT).show();
-		} else {
-			Toast.makeText(getBaseContext(),  String.format("Your Location (LLA):\n%.2f, %.2f, %.2f", currentLocation.getLatitude(),currentLocation.getLongitude(), currentLocation.getAltitude()), Toast.LENGTH_SHORT).show();
-		}
-	}
-		
+
+
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
 
 //	   Determines whether one Location reading is better than the current Location fix
