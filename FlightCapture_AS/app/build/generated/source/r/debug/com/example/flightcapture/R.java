@@ -14,15 +14,17 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int cancel=0x7f070004;
+        public static final int cancel=0x7f070006;
         public static final int editDist=0x7f070003;
         public static final int editFrames=0x7f070001;
         public static final int editTime=0x7f070002;
-        public static final int menu_settings=0x7f070008;
+        public static final int menu_settings=0x7f07000a;
         public static final int preview=0x7f070000;
-        public static final int snap=0x7f070007;
-        public static final int start=0x7f070005;
-        public static final int startdist=0x7f070006;
+        public static final int readXOrient=0x7f070004;
+        public static final int readYOrient=0x7f070005;
+        public static final int snap=0x7f070009;
+        public static final int start=0x7f070007;
+        public static final int startdist=0x7f070008;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
@@ -36,16 +38,20 @@ public final class R {
         public static final int cancel=0x7f050002;
         public static final int defaultDist=0x7f050003;
         public static final int defaultFrames=0x7f050004;
-        public static final int defaultTime=0x7f050005;
-        public static final int editDist=0x7f050006;
-        public static final int editFrames=0x7f050007;
-        public static final int editTime=0x7f050008;
-        public static final int hello_world=0x7f050009;
-        public static final int menu_settings=0x7f05000a;
-        public static final int snapPic=0x7f05000b;
-        public static final int startDist=0x7f05000c;
-        public static final int startTime=0x7f05000d;
-        public static final int title_activity_preview=0x7f05000e;
+        public static final int defaultOrient=0x7f050005;
+        public static final int defaultTime=0x7f050006;
+        public static final int editDist=0x7f050007;
+        public static final int editFrames=0x7f050008;
+        public static final int editTime=0x7f050009;
+        public static final int hello_world=0x7f05000a;
+        public static final int menu_settings=0x7f05000b;
+        public static final int readXOrient=0x7f05000c;
+        public static final int readYOrient=0x7f05000d;
+        public static final int readZOrient=0x7f05000e;
+        public static final int snapPic=0x7f05000f;
+        public static final int startDist=0x7f050010;
+        public static final int startTime=0x7f050011;
+        public static final int title_activity_preview=0x7f050012;
     }
     public static final class style {
         /**  API 11 theme customizations can go here. 
