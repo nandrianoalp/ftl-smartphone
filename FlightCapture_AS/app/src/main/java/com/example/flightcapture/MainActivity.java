@@ -16,6 +16,8 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -30,6 +32,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.app.Activity;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Bundle;
 
 public class MainActivity extends Activity 
 		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback {
@@ -61,6 +69,7 @@ public class MainActivity extends Activity
     LocationManager locationManager;
     Location currentLocation, previousLocation;
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -82,6 +91,7 @@ public class MainActivity extends Activity
         // For now I can use the keep screen on flag and leave in portrait to keep the app working
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);		// Band-aid
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);	// Band-aid
+
 
 	}
 
@@ -174,7 +184,7 @@ public class MainActivity extends Activity
 		DISTANCE = false;
 		FIRST_DISTANCE = false;
 		storeDir = "SingleShot";
-		mCamera.takePicture( this, null, null, this);
+		mCamera.takePicture(this, null, null, this);
 	}
 	
 	public void onStartTimeClick(View v)
