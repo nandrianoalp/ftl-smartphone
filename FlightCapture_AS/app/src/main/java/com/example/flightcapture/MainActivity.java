@@ -810,10 +810,10 @@ public class MainActivity extends Activity
 			float oneMinusCoeff = 1.0f - FILTER_COEFFICIENT;
 
             /*
-             * Fix for 179° <--> -179° transition problem:
+             * Fix for 179 degrees <--> -179 degrees transition problem:
              * Check whether one of the two orientation angles (gyro or accMag) is negative while the other one is positive.
-             * If so, add 360° (2 * math.PI) to the negative value, perform the sensor fusion, and remove the 360° from the result
-             * if it is greater than 180°. This stabilizes the output in positive-to-negative-transition cases.
+             * If so, add 360 degrees (2 * math.PI) to the negative value, perform the sensor fusion, and remove the 360 degrees from the result
+             * if it is greater than 180 degrees. This stabilizes the output in positive-to-negative-transition cases.
              */
 
 			// azimuth
@@ -856,7 +856,7 @@ public class MainActivity extends Activity
 			}
 
 			// overwrite gyro matrix and orientation with fused orientation
-			// to comensate gyro drift
+			// to compensate gyro drift
 			gyroMatrix = getRotationMatrixFromOrientation(fusedOrientation);
 			System.arraycopy(fusedOrientation, 0, gyroOrientation, 0, 3);
 
@@ -887,19 +887,19 @@ public class MainActivity extends Activity
 	public void updateOreintationDisplay() {
 		switch(radioSelection) {
 			case 0:
-				mAzimuthView.setText(d.format(accMagOrientation[0] * 180/Math.PI) + '°');
-				mPitchView.setText(d.format(accMagOrientation[1] * 180/Math.PI) + '°');
-				mRollView.setText(d.format(accMagOrientation[2] * 180/Math.PI) + '°');
+				mAzimuthView.setText(d.format(accMagOrientation[0] * 180/Math.PI));
+				mPitchView.setText(d.format(accMagOrientation[1] * 180/Math.PI));
+				mRollView.setText(d.format(accMagOrientation[2] * 180/Math.PI));
 				break;
 			case 1:
-				mAzimuthView.setText(d.format(gyroOrientation[0] * 180/Math.PI) + '°');
-				mPitchView.setText(d.format(gyroOrientation[1] * 180/Math.PI) + '°');
-				mRollView.setText(d.format(gyroOrientation[2] * 180/Math.PI) + '°');
+				mAzimuthView.setText(d.format(gyroOrientation[0] * 180/Math.PI));
+				mPitchView.setText(d.format(gyroOrientation[1] * 180/Math.PI));
+				mRollView.setText(d.format(gyroOrientation[2] * 180/Math.PI));
 				break;
 			case 2:
-				mAzimuthView.setText(d.format(fusedOrientation[0] * 180/Math.PI) + '°');
-				mPitchView.setText(d.format(fusedOrientation[1] * 180/Math.PI) + '°');
-				mRollView.setText(d.format(fusedOrientation[2] * 180/Math.PI) + '°');
+				mAzimuthView.setText(d.format(fusedOrientation[0] * 180/Math.PI));
+				mPitchView.setText(d.format(fusedOrientation[1] * 180/Math.PI));
+				mRollView.setText(d.format(fusedOrientation[2] * 180/Math.PI));
 				break;
 		}
 	}
