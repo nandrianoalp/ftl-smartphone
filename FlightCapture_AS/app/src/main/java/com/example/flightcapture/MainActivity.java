@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -25,6 +29,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -33,27 +38,19 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
-
 public class MainActivity extends Activity 
-		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback, SensorEventListener {
-	
-	//private static final String JPEG_FILE_PREFIX = "img";
-	//private static final String JPEG_FILE_SUFFIX = ".jpg";
-	//String mCurrentPhotoPath = "";
-	
-	//private static final int REQUEST_IMAGE = 100;
-	//ImageView imageView;
-	
+		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback,
+		SensorEventListener, RadioGroup.OnCheckedChangeListener {
+
 	private static final String TAG = "MyActivity";
 		
 	public static final int MEDIA_TYPE_IMAGE = 1;
 	public static final int MEDIA_TYPE_VIDEO = 2;
-//	private static final int LOOPTIMEOUT = 100000;	//In milliseconds
-	
+
 	private static String storeDir = "FlightCapture";
 	private static boolean CAMERA_READY = true;
 	private static boolean STREAM_CAPTURE = false;
@@ -69,21 +66,60 @@ public class MainActivity extends Activity
 	public static float DISTANCE_TO_TRAVEL = 2;	//Distance in meters
 	public static boolean FIRST_DISTANCE = false;
 	
-//	PowerManager pm;
-//	PowerManager.WakeLock mWakeLock;
-	
 	Camera mCamera;
-	//SurfaceView mPreview;
     SurfaceView mSurfaceView;
     SurfaceHolder mHolder;
     
     LocationManager locationManager;
     Location currentLocation, previousLocation;
-    TextView locationView;
-    
-    private SensorManager mSensorManager;
-    private Sensor mSensor;
-    
+
+	// ADDED SENSOR CODE
+	private SensorManager mSensorManager = null;
+
+	// angular speeds from gyro
+	private float[] gyro = new float[3];
+
+	// rotation matrix from gyro data
+	private float[] gyroMatrix = new float[9];
+
+	// orientation angles from gyro matrix
+	private float[] gyroOrientation = new float[3];
+
+	// magnetic field vector
+	private float[] magnet = new float[3];
+
+	// accelerometer vector
+	private float[] accel = new float[3];
+
+	// orientation angles from accel and magnet
+	private float[] accMagOrientation = new float[3];
+
+	// final orientation angles from sensor fusion
+	private float[] fusedOrientation = new float[3];
+
+	// accelerometer and magnetometer based rotation matrix
+	private float[] rotationMatrix = new float[9];
+
+	public static final float EPSILON = 0.000000001f;
+	private static final float NS2S = 1.0f / 1000000000.0f;
+	private int timestamp;
+	private boolean initState = true;
+
+	public static final int TIME_CONSTANT = 30;
+	public static final float FILTER_COEFFICIENT = 0.98f;
+	private Timer fuseTimer = new Timer();
+
+	// The following members are only for displaying the sensor output.
+	public Handler mHandler;
+	private RadioGroup mRadioGroup;
+	private TextView mAzimuthView;
+	private TextView mPitchView;
+	private TextView mRollView;
+	private int radioSelection;
+	DecimalFormat d = new DecimalFormat("#.##");
+	// END ADDED SENSOR CODE
+
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -97,35 +133,48 @@ public class MainActivity extends Activity
 		
         if (checkCameraHardware(this))
         {
-        	safeCameraOpen(0);
+        	safeCameraOpen(false);
         }
-		//imageView = (ImageView)findViewById(R.id.image);
-        
-//        locationView = new TextView(this);
-//        setContentView(locationView);
         
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        //LocationProvider provider = locationManager.getProvider(LocationManager.GPS_PROVIDER);
-        
-        // Might need to use WakeLock to keep the app going 
-//        pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-//        mWakeLock = pm.newWakeLock(
-//                PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG);
-//        mWakeLock.acquire();    // Keep the screen on and the activity alive    
-        
+
         // For now I can use the keep screen on flag and leave in portrait to keep the app working
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);		// Band-aid
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);	// Band-aid	
-        
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        List<Sensor> deviceSensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
-//        for(int i=0; i < deviceSensors.size(); i++) {
-//        		mSensor = deviceSensors.get(i);
-//        		String temp = mSensor.getName();
-//            	Toast.makeText(this.getBaseContext(), temp, Toast.LENGTH_LONG).show();
-//        }        
-        //mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);	// Band-aid
+
+		// ADDED SENSOR CODE
+		gyroOrientation[0] = 0.0f;
+		gyroOrientation[1] = 0.0f;
+		gyroOrientation[2] = 0.0f;
+
+		// initialise gyroMatrix with identity matrix
+		gyroMatrix[0] = 1.0f; gyroMatrix[1] = 0.0f; gyroMatrix[2] = 0.0f;
+		gyroMatrix[3] = 0.0f; gyroMatrix[4] = 1.0f; gyroMatrix[5] = 0.0f;
+		gyroMatrix[6] = 0.0f; gyroMatrix[7] = 0.0f; gyroMatrix[8] = 1.0f;
+
+		// get sensorManager and initialise sensor listeners
+		mSensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
+		initListeners();
+
+		// wait for one second until gyroscope and magnetometer/accelerometer
+		// data is initialised then scedule the complementary filter task
+		fuseTimer.scheduleAtFixedRate(new calculateFusedOrientationTask(),
+				1000, TIME_CONSTANT);
+
+		// GUI stuff
+		mHandler = new Handler();
+		radioSelection = 0;
+		d.setRoundingMode(RoundingMode.HALF_UP);
+		d.setMaximumFractionDigits(3);
+		d.setMinimumFractionDigits(3);
+		mRadioGroup = (RadioGroup)findViewById(R.id.radioGroup1);
+		mAzimuthView = (TextView)findViewById(R.id.textView4);
+		mPitchView = (TextView)findViewById(R.id.textView5);
+		mRollView = (TextView)findViewById(R.id.textView6);
+		mRadioGroup.setOnCheckedChangeListener(this);
+		// END ADDED SENSOR CODE
 	}
+
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -138,17 +187,19 @@ public class MainActivity extends Activity
 	public void onStart()
 	{
 		super.onStart();
-//		safeCameraOpen(0);
-//		safeLocationStart();
 	}
 	
 	@Override
 	public void onResume()
 	{
 		super.onResume();
-		safeCameraOpen(0);
+		safeCameraOpen(false);
 		safeLocationStart();
-		//mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+		// ADDED SENSOR CODE
+		// restore the sensor listeners when user resumes the application.
+		initListeners();
+		// END ADDED SENSOR CODE
 	}
 	
 	@Override
@@ -157,15 +208,22 @@ public class MainActivity extends Activity
 		super.onPause();
 		stopPreviewAndFreeCamera();
 		locationManager.removeUpdates(listener);
-		//mSensorManager.unregisterListener(this);
+
+		// ADDED SENSOR CODE
+		// unregister sensor listeners to prevent the activity from draining the device's battery.
+		mSensorManager.unregisterListener(this);
+		// END ADDED SENSOR CODE
 	}
 	
 	@Override
 	public void onStop()
 	{
 		super.onStop();
-//		stopPreviewAndFreeCamera();
-//		locationManager.removeUpdates(listener);
+
+		// ADDED SENSOR CODE
+		// unregister sensor listeners to prevent the activity from draining the device's battery.
+		mSensorManager.unregisterListener(this);
+		// END ADDED SENSOR CODE
 	}
 	
 	@Override
@@ -174,17 +232,14 @@ public class MainActivity extends Activity
 		super.onDestroy();
 		stopPreviewAndFreeCamera();
 		locationManager.removeUpdates(listener);
-//		mWakeLock.release();
 	}
 	
-	private boolean safeCameraOpen(int id) {
-	    boolean qOpened = false;
+	private boolean safeCameraOpen(boolean qOpened) {
 	  
 	    try {
 	        releaseCameraAndPreview();
 	        mCamera = Camera.open();		// Override 'id' and set to first back facing camera
 	        qOpened = (mCamera != null);
-	        //mCamera.enableShutterSound(false);
 	    } catch (Exception e) {
 	        Log.e(getString(R.string.app_name), "failed to open Camera");
 	        e.printStackTrace();
@@ -194,8 +249,7 @@ public class MainActivity extends Activity
 	}
 	
 	private void releaseCameraAndPreview() {
-	    //mPreview.setCamera(null);
-		//setCamera(null);
+
 	    if (mCamera != null) {
 	        mCamera.release();
 	        mCamera = null;
@@ -225,7 +279,7 @@ public class MainActivity extends Activity
 		DISTANCE = false;
 		FIRST_DISTANCE = false;
 		storeDir = "SingleShot";
-		mCamera.takePicture( this, null, null, this);
+		mCamera.takePicture(this, null, null, this);
 	}
 	
 	public void onStartTimeClick(View v)
@@ -279,17 +333,15 @@ public class MainActivity extends Activity
 	
 	public void continuousCapture()
 	{
-		if (TOTAL_FRAMES == 0) {	//Continue
-		} else if (TOTAL_COUNT >= TOTAL_FRAMES) {
+		if (TOTAL_COUNT >= TOTAL_FRAMES) {
 			return; // Done
 		}
 		
 		long prevTime = System.currentTimeMillis();	// Time at loop start
 		long currentTime;
-		if (DISTANCE == true) {	//Snap a series of photos based on distance traveled
-			//String temp = "Distance " + Integer.toString(TOTAL_COUNT);
-			//Toast.makeText(getBaseContext(), temp, Toast.LENGTH_SHORT).show();
-			if ((CAMERA_READY == true) && (FIRST_DISTANCE == false)) {
+		if (DISTANCE) {	//Snap a series of photos based on distance traveled
+
+			if (CAMERA_READY && !FIRST_DISTANCE) {
 				TOTAL_COUNT++;
 				CAMERA_READY = false;
 				mCamera.takePicture( this, null, null, this);
@@ -297,7 +349,7 @@ public class MainActivity extends Activity
 		} else {	// DISTANCE == false, Snap a series of photos based on time passed								
 			while(true) {
 				currentTime = System.currentTimeMillis();
-				if (((currentTime - prevTime) > TIME_TO_TRAVEL) && (CAMERA_READY == true)) {	// Not the right way to do this
+				if (((currentTime - prevTime) > TIME_TO_TRAVEL) && CAMERA_READY) {	// Not the right way to do this
 					TOTAL_COUNT++;
 					CAMERA_READY = false;
 					mCamera.takePicture( this, null, null, this);
@@ -311,7 +363,7 @@ public class MainActivity extends Activity
 	@Override
 	public void onShutter()
 	{
-		//Toast.makeText(this,  "Click!", Toast.LENGTH_SHORT).show();
+
 	}
 	
 	@Override
@@ -319,7 +371,6 @@ public class MainActivity extends Activity
 	{
 		//Add GPS properties to image
 		addGpsToImg();
-		//Toast.makeText(getBaseContext(), "onPictureTaken", Toast.LENGTH_SHORT).show();
 		
 		//Store the picture
         File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
@@ -341,7 +392,7 @@ public class MainActivity extends Activity
 		//Must restart preview
 		camera.startPreview();
 		CAMERA_READY = true;
-		if ((DISTANCE == false) && (STREAM_CAPTURE == true))
+		if (!DISTANCE && STREAM_CAPTURE)
 		{
 			continuousCapture();
 		}
@@ -355,14 +406,10 @@ public class MainActivity extends Activity
 		List<Camera.Size> prevsizes = params.getSupportedPreviewSizes();
 		Camera.Size prevselected = prevsizes.get(0);
 		params.setPreviewSize(prevselected.width, prevselected.height);
-		
-		//List<Camera.Size> imgsizes = params.getSupportedPictureSizes();
-		//Camera.Size imgselected = imgsizes.get(imgsizes.size()-1) );	// Near full size
-		//params.setPictureSize(imgselected.width, imgselected.height);
+
 		params.setPictureSize(3264, 2448);		// Hard-coded image size to Galaxy S3		
 		params.setJpegQuality(100);
-		
-		//addGpsToImg();
+
 		mCamera.setParameters(params);		
         mCamera.setDisplayOrientation(90);
 		mCamera.startPreview();
@@ -396,8 +443,6 @@ public class MainActivity extends Activity
 			params.setGpsLatitude(currentLocation.getLatitude());
 			params.setGpsLongitude(currentLocation.getLongitude());
 			params.setGpsTimestamp(currentLocation.getTime()/1000);		// setGpsTimestamp takes seconds, not milliseconds (returned by getTime()
-			//params.setGpsProcessingMethod(currentLocation.getProvider());
-			//Toast.makeText(getBaseContext(), "Added GPS data", Toast.LENGTH_SHORT).show();
 		}		
 		mCamera.setParameters(params);
 	}
@@ -411,10 +456,7 @@ public class MainActivity extends Activity
 	              Environment.DIRECTORY_PICTURES), storeDir);
 	    // This location works best if you want the created images to be shared
 	    // between applications and persist after your app has been uninstalled.
-	    
-	    //String temp = "Stored at: " + mediaStorageDir.toString();
-	    //Toast.makeText(context,  temp, Toast.LENGTH_SHORT).show();
-	    
+
 	    // Create the storage directory if it does not exist
 	    if (! mediaStorageDir.exists()){
 	        if (! mediaStorageDir.mkdirs()){
@@ -449,7 +491,6 @@ public class MainActivity extends Activity
 	        // Build an alert dialog here that requests that the user enable
 	        // the location services, then when the user clicks the "OK" button,
 	        // call enableLocationSettings()
-	    	//Toast.makeText(getBaseContext(),  "GPS Not Enabled", Toast.LENGTH_SHORT).show();
 	    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	    	builder.setTitle("Location Manager");
 	    	builder.setMessage("Turn on the GPS?");
@@ -458,7 +499,6 @@ public class MainActivity extends Activity
 				public void onClick(DialogInterface dialog, int which) {
 					//No location service, no Activity
 					enableLocationSettings();			// sends user to Android Settings to turn on GPS
-	    			//finish();		//ends the activity			
 				}
 	    	});
 	    	builder.create().show();	    	
@@ -466,13 +506,11 @@ public class MainActivity extends Activity
 	    
 	    //Get a cached location, if it exists
 	    currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-	    //previousLocation = currentLocation;
-	    //updateGPSDisplay();
+
 	    //Register for updates
 	    int minTime = TIME_BETWEEN_GPS;
 	    float minDist = 0;
 	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDist, listener);
-	    //Toast.makeText(getBaseContext(), "safeLocationStart", Toast.LENGTH_SHORT).show();
 	}
 	    
 	private final LocationListener listener = new LocationListener() {
@@ -485,24 +523,20 @@ public class MainActivity extends Activity
 	    		return;		//Skip routine if location is invalid
 	    	if (previousLocation == null)
 	    		previousLocation = currentLocation;			// Prevents a capture if null
-	    	//updateGPSDisplay();
-	    	//Toast.makeText(getBaseContext(), "onLocationChanged", Toast.LENGTH_SHORT).show();
-	    	float[] dist = {0};
+
 	    	float distance = 0;
-	    	if ((DISTANCE == true) && (STREAM_CAPTURE == true)) {
-	    		//Toast.makeText(getBaseContext(), "Comparing location...", Toast.LENGTH_SHORT).show();
-	    		if (FIRST_DISTANCE == true) {
+	    	if (DISTANCE && STREAM_CAPTURE) {
+
+	    		if (FIRST_DISTANCE) {
 		    		Toast.makeText(getBaseContext(), "First!", Toast.LENGTH_SHORT).show();
-	    			//updateGPSDisplay();
+
 		    		previousLocation = currentLocation;
 		    		FIRST_DISTANCE = false;
 		    		continuousCapture();
 		    	} else {	// Makes sure first distance has succeeded
-//	    			Location.distanceBetween(previousLocation.getLatitude(),previousLocation.getLongitude(), 
-//    						currentLocation.getLatitude(), currentLocation.getLongitude(), dist);
-    				//Toast.makeText(getBaseContext(), "Made it", Toast.LENGTH_SHORT).show();
+
     				distance = currentLocation.distanceTo(previousLocation);
-//    			    if (dist[0] > DISTANCE_TO_TRAVEL) {
+
     	    		if (distance > DISTANCE_TO_TRAVEL) {	
     	    			String temp = "Accuracy = " + Float.toString(currentLocation.getAccuracy());
     		    		Toast.makeText(getBaseContext(), temp, Toast.LENGTH_SHORT).show();
@@ -523,19 +557,7 @@ public class MainActivity extends Activity
 	    @Override
 	    public void onStatusChanged(String provider, int status, Bundle extras) {}
 	};
-	
-	  @Override
-	  public final void onAccuracyChanged(Sensor sensor, int accuracy) {
-	    // Do something here if sensor accuracy changes.
-	  }
 
-	  @Override
-	  public final void onSensorChanged(SensorEvent event) {
-	    // The light sensor returns a single value.
-	    // Many sensors return 3 values, one for each axis.
-	    float lux = event.values[0];
-	    // Do something with this sensor value.
-	  }
 
 	private void enableLocationSettings() {
 	    Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -550,16 +572,8 @@ public class MainActivity extends Activity
 	        return false;	// no camera on this device
 	    }
 	}
-    
-	//Update text view
-	private void updateGPSDisplay() {
-		if(currentLocation == null) {
-			Toast.makeText(getBaseContext(),  "Determining location...", Toast.LENGTH_SHORT).show();
-		} else {
-			Toast.makeText(getBaseContext(),  String.format("Your Location (LLA):\n%.2f, %.2f, %.2f", currentLocation.getLatitude(),currentLocation.getLongitude(), currentLocation.getAltitude()), Toast.LENGTH_SHORT).show();
-		}
-	}
-		
+
+
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
 
 //	   Determines whether one Location reading is better than the current Location fix
@@ -615,91 +629,286 @@ public class MainActivity extends Activity
 	    }
 	    return provider1.equals(provider2);
 	}
-	
-}
 
+	// ADDED SENSOR CODE
 
-//////////////// ARCHIVED FUNCTIONS ///////////////
-/*	
-protected void onActivityResult(int requestCode, int resultCode, Intent data)
-{
-	if(requestCode == REQUEST_IMAGE && resultCode == Activity.RESULT_OK)
-	{
-		//Process and display the image
-		Bitmap userImage = (Bitmap)data.getExtras().get("data");
-		imageView.setImageBitmap(userImage);
+	// This function registers sensor listeners for the accelerometer, magnetometer and gyroscope.
+	public void initListeners(){
+		mSensorManager.registerListener(this,
+				mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				SensorManager.SENSOR_DELAY_FASTEST);
+
+		mSensorManager.registerListener(this,
+				mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
+				SensorManager.SENSOR_DELAY_FASTEST);
+
+		mSensorManager.registerListener(this,
+				mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+				SensorManager.SENSOR_DELAY_FASTEST);
 	}
-}
 
-public void takePicIntent(View view)
-{
-	Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-	startActivityForResult(intent, REQUEST_IMAGE);
-}
-*/	
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+	}
 
-/*
-public void dispatchTakePictureIntent(View view) {		// fn(int actionCode)
-	int actionCode = 100;		// Temporary hard-code
-    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-   try 
-   {
-    	File f = createImageFile();
-	    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
-	    startActivityForResult(takePictureIntent, actionCode);
-	    //galleryAddPic();
-    } 
-    catch (IOException ie)
-    {
-    	// Do Nothing
-    }
+	@Override
+	public void onSensorChanged(SensorEvent event) {
+		switch(event.sensor.getType()) {
+			case Sensor.TYPE_ACCELEROMETER:
+				// copy new accelerometer data into accel array and calculate orientation
+				System.arraycopy(event.values, 0, accel, 0, 3);
+				calculateAccMagOrientation();
+				break;
+
+			case Sensor.TYPE_GYROSCOPE:
+				// process gyro data
+				gyroFunction(event);
+				break;
+
+			case Sensor.TYPE_MAGNETIC_FIELD:
+				// copy new magnetometer data into magnet array
+				System.arraycopy(event.values, 0, magnet, 0, 3);
+				break;
+		}
+	}
+
+	// calculates orientation angles from accelerometer and magnetometer output
+	public void calculateAccMagOrientation() {
+		if(SensorManager.getRotationMatrix(rotationMatrix, null, accel, magnet)) {
+			SensorManager.getOrientation(rotationMatrix, accMagOrientation);
+		}
+	}
+
+	// This function is borrowed from the Android reference
+	// at http://developer.android.com/reference/android/hardware/SensorEvent.html#values
+	// It calculates a rotation vector from the gyroscope angular speed values.
+	private void getRotationVectorFromGyro(float[] gyroValues,
+										   float[] deltaRotationVector,
+										   float timeFactor)
+	{
+		float[] normValues = new float[3];
+
+		// Calculate the angular speed of the sample
+		float omegaMagnitude =
+				(float)Math.sqrt(gyroValues[0] * gyroValues[0] +
+						gyroValues[1] * gyroValues[1] +
+						gyroValues[2] * gyroValues[2]);
+
+		// Normalize the rotation vector if it's big enough to get the axis
+		if(omegaMagnitude > EPSILON) {
+			normValues[0] = gyroValues[0] / omegaMagnitude;
+			normValues[1] = gyroValues[1] / omegaMagnitude;
+			normValues[2] = gyroValues[2] / omegaMagnitude;
+		}
+
+		// Integrate around this axis with the angular speed by the timestep
+		// in order to get a delta rotation from this sample over the timestep
+		// We will convert this axis-angle representation of the delta rotation
+		// into a quaternion before turning it into the rotation matrix.
+		float thetaOverTwo = omegaMagnitude * timeFactor;
+		float sinThetaOverTwo = (float)Math.sin(thetaOverTwo);
+		float cosThetaOverTwo = (float)Math.cos(thetaOverTwo);
+		deltaRotationVector[0] = sinThetaOverTwo * normValues[0];
+		deltaRotationVector[1] = sinThetaOverTwo * normValues[1];
+		deltaRotationVector[2] = sinThetaOverTwo * normValues[2];
+		deltaRotationVector[3] = cosThetaOverTwo;
+	}
+
+	// This function performs the integration of the gyroscope data.
+	// It writes the gyroscope based orientation into gyroOrientation.
+	public void gyroFunction(SensorEvent event) {
+		// don't start until first accelerometer/magnetometer orientation has been acquired
+		if (accMagOrientation == null)
+			return;
+
+		// initialisation of the gyroscope based rotation matrix
+		if(initState) {
+			float[] initMatrix = new float[9];
+			initMatrix = getRotationMatrixFromOrientation(accMagOrientation);
+			float[] test = new float[3];
+			SensorManager.getOrientation(initMatrix, test);
+			gyroMatrix = matrixMultiplication(gyroMatrix, initMatrix);
+			initState = false;
+		}
+
+		// copy the new gyro values into the gyro array
+		// convert the raw gyro data into a rotation vector
+		float[] deltaVector = new float[4];
+		if(timestamp != 0) {
+			final float dT = (event.timestamp - timestamp) * NS2S;
+			System.arraycopy(event.values, 0, gyro, 0, 3);
+			getRotationVectorFromGyro(gyro, deltaVector, dT / 2.0f);
+		}
+
+		// measurement done, save current time for next interval
+		timestamp = (int) event.timestamp;
+
+		// convert rotation vector into rotation matrix
+		float[] deltaMatrix = new float[9];
+		SensorManager.getRotationMatrixFromVector(deltaMatrix, deltaVector);
+
+		// apply the new rotation interval on the gyroscope based rotation matrix
+		gyroMatrix = matrixMultiplication(gyroMatrix, deltaMatrix);
+
+		// get the gyroscope based orientation from the rotation matrix
+		SensorManager.getOrientation(gyroMatrix, gyroOrientation);
+	}
+
+	private float[] getRotationMatrixFromOrientation(float[] o) {
+		float[] xM = new float[9];
+		float[] yM = new float[9];
+		float[] zM = new float[9];
+
+		float sinX = (float)Math.sin(o[1]);
+		float cosX = (float)Math.cos(o[1]);
+		float sinY = (float)Math.sin(o[2]);
+		float cosY = (float)Math.cos(o[2]);
+		float sinZ = (float)Math.sin(o[0]);
+		float cosZ = (float)Math.cos(o[0]);
+
+		// rotation about x-axis (pitch)
+		xM[0] = 1.0f; xM[1] = 0.0f; xM[2] = 0.0f;
+		xM[3] = 0.0f; xM[4] = cosX; xM[5] = sinX;
+		xM[6] = 0.0f; xM[7] = -sinX; xM[8] = cosX;
+
+		// rotation about y-axis (roll)
+		yM[0] = cosY; yM[1] = 0.0f; yM[2] = sinY;
+		yM[3] = 0.0f; yM[4] = 1.0f; yM[5] = 0.0f;
+		yM[6] = -sinY; yM[7] = 0.0f; yM[8] = cosY;
+
+		// rotation about z-axis (azimuth)
+		zM[0] = cosZ; zM[1] = sinZ; zM[2] = 0.0f;
+		zM[3] = -sinZ; zM[4] = cosZ; zM[5] = 0.0f;
+		zM[6] = 0.0f; zM[7] = 0.0f; zM[8] = 1.0f;
+
+		// rotation order is y, x, z (roll, pitch, azimuth)
+		float[] resultMatrix = matrixMultiplication(xM, yM);
+		resultMatrix = matrixMultiplication(zM, resultMatrix);
+		return resultMatrix;
+	}
+
+	private float[] matrixMultiplication(float[] A, float[] B) {
+		float[] result = new float[9];
+
+		result[0] = A[0] * B[0] + A[1] * B[3] + A[2] * B[6];
+		result[1] = A[0] * B[1] + A[1] * B[4] + A[2] * B[7];
+		result[2] = A[0] * B[2] + A[1] * B[5] + A[2] * B[8];
+
+		result[3] = A[3] * B[0] + A[4] * B[3] + A[5] * B[6];
+		result[4] = A[3] * B[1] + A[4] * B[4] + A[5] * B[7];
+		result[5] = A[3] * B[2] + A[4] * B[5] + A[5] * B[8];
+
+		result[6] = A[6] * B[0] + A[7] * B[3] + A[8] * B[6];
+		result[7] = A[6] * B[1] + A[7] * B[4] + A[8] * B[7];
+		result[8] = A[6] * B[2] + A[7] * B[5] + A[8] * B[8];
+
+		return result;
+	}
+
+	class calculateFusedOrientationTask extends TimerTask {
+		public void run() {
+			float oneMinusCoeff = 1.0f - FILTER_COEFFICIENT;
+
+            /*
+             * Fix for 179 degrees <--> -179 degrees transition problem:
+             * Check whether one of the two orientation angles (gyro or accMag) is negative while the other one is positive.
+             * If so, add 360 degrees (2 * math.PI) to the negative value, perform the sensor fusion, and remove the 360 degrees from the result
+             * if it is greater than 180 degrees. This stabilizes the output in positive-to-negative-transition cases.
+             */
+
+			// azimuth
+			if (gyroOrientation[0] < -0.5 * Math.PI && accMagOrientation[0] > 0.0) {
+				fusedOrientation[0] = (float) (FILTER_COEFFICIENT * (gyroOrientation[0] + 2.0 * Math.PI) + oneMinusCoeff * accMagOrientation[0]);
+				fusedOrientation[0] -= (fusedOrientation[0] > Math.PI) ? 2.0 * Math.PI : 0;
+			}
+			else if (accMagOrientation[0] < -0.5 * Math.PI && gyroOrientation[0] > 0.0) {
+				fusedOrientation[0] = (float) (FILTER_COEFFICIENT * gyroOrientation[0] + oneMinusCoeff * (accMagOrientation[0] + 2.0 * Math.PI));
+				fusedOrientation[0] -= (fusedOrientation[0] > Math.PI)? 2.0 * Math.PI : 0;
+			}
+			else {
+				fusedOrientation[0] = FILTER_COEFFICIENT * gyroOrientation[0] + oneMinusCoeff * accMagOrientation[0];
+			}
+
+			// pitch
+			if (gyroOrientation[1] < -0.5 * Math.PI && accMagOrientation[1] > 0.0) {
+				fusedOrientation[1] = (float) (FILTER_COEFFICIENT * (gyroOrientation[1] + 2.0 * Math.PI) + oneMinusCoeff * accMagOrientation[1]);
+				fusedOrientation[1] -= (fusedOrientation[1] > Math.PI) ? 2.0 * Math.PI : 0;
+			}
+			else if (accMagOrientation[1] < -0.5 * Math.PI && gyroOrientation[1] > 0.0) {
+				fusedOrientation[1] = (float) (FILTER_COEFFICIENT * gyroOrientation[1] + oneMinusCoeff * (accMagOrientation[1] + 2.0 * Math.PI));
+				fusedOrientation[1] -= (fusedOrientation[1] > Math.PI)? 2.0 * Math.PI : 0;
+			}
+			else {
+				fusedOrientation[1] = FILTER_COEFFICIENT * gyroOrientation[1] + oneMinusCoeff * accMagOrientation[1];
+			}
+
+			// roll
+			if (gyroOrientation[2] < -0.5 * Math.PI && accMagOrientation[2] > 0.0) {
+				fusedOrientation[2] = (float) (FILTER_COEFFICIENT * (gyroOrientation[2] + 2.0 * Math.PI) + oneMinusCoeff * accMagOrientation[2]);
+				fusedOrientation[2] -= (fusedOrientation[2] > Math.PI) ? 2.0 * Math.PI : 0;
+			}
+			else if (accMagOrientation[2] < -0.5 * Math.PI && gyroOrientation[2] > 0.0) {
+				fusedOrientation[2] = (float) (FILTER_COEFFICIENT * gyroOrientation[2] + oneMinusCoeff * (accMagOrientation[2] + 2.0 * Math.PI));
+				fusedOrientation[2] -= (fusedOrientation[2] > Math.PI)? 2.0 * Math.PI : 0;
+			}
+			else {
+				fusedOrientation[2] = FILTER_COEFFICIENT * gyroOrientation[2] + oneMinusCoeff * accMagOrientation[2];
+			}
+
+			// overwrite gyro matrix and orientation with fused orientation
+			// to compensate gyro drift
+			gyroMatrix = getRotationMatrixFromOrientation(fusedOrientation);
+			System.arraycopy(fusedOrientation, 0, gyroOrientation, 0, 3);
+
+
+			// update sensor output in GUI
+			mHandler.post(updateOreintationDisplayTask);
+		}
+	}
+
+
+	// **************************** GUI FUNCTIONS *********************************
+
+	@Override
+	public void onCheckedChanged(RadioGroup group, int checkedId) {
+		switch(checkedId) {
+			case R.id.radio0:
+				radioSelection = 0;
+				break;
+			case R.id.radio1:
+				radioSelection = 1;
+				break;
+			case R.id.radio2:
+				radioSelection = 2;
+				break;
+		}
+	}
+
+	public void updateOreintationDisplay() {
+		switch(radioSelection) {
+			case 0:
+				mAzimuthView.setText(d.format(accMagOrientation[0] * 180/Math.PI));
+				mPitchView.setText(d.format(accMagOrientation[1] * 180/Math.PI));
+				mRollView.setText(d.format(accMagOrientation[2] * 180/Math.PI));
+				break;
+			case 1:
+				mAzimuthView.setText(d.format(gyroOrientation[0] * 180/Math.PI));
+				mPitchView.setText(d.format(gyroOrientation[1] * 180/Math.PI));
+				mRollView.setText(d.format(gyroOrientation[2] * 180/Math.PI));
+				break;
+			case 2:
+				mAzimuthView.setText(d.format(fusedOrientation[0] * 180/Math.PI));
+				mPitchView.setText(d.format(fusedOrientation[1] * 180/Math.PI));
+				mRollView.setText(d.format(fusedOrientation[2] * 180/Math.PI));
+				break;
+		}
+	}
+
+	private Runnable updateOreintationDisplayTask = new Runnable() {
+		public void run() {
+			updateOreintationDisplay();
+		}
+	};
+	// END ADDED SENSOR CODE
 
 }
-
-public static boolean isIntentAvailable(Context context, String action) {
-    final PackageManager packageManager = context.getPackageManager();
-    final Intent intent = new Intent(action);
-    List<ResolveInfo> list =
-            packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-    return list.size() > 0;
-}
-*/	
-/*	
-private File createImageFile() throws IOException {
-    // Create an image file name
-    String timeStamp = 
-        new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-    String imageFileName = JPEG_FILE_PREFIX + timeStamp;
-    File image = File.createTempFile(
-        imageFileName, 
-        JPEG_FILE_SUFFIX, 
-        getAlbumDir()
-    );
-    mCurrentPhotoPath = image.getAbsolutePath();
-    return image;
-}
-
-private File getAlbumDir() {
-	File storageDir = new File(
-		    Environment.getExternalStoragePublicDirectory(
-		        Environment.DIRECTORY_PICTURES
-		    ), 
-		    getAlbumName()
-		);
-	return storageDir;
-}
-
-private String getAlbumName() {
-	String albumDir = "ScanImages";
-	return albumDir;		// Still need to decide on a reasonable album name
-}
-*/	
-/*	
-private void galleryAddPic() {
-    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-    File f = new File(mCurrentPhotoPath);
-    Uri contentUri = Uri.fromFile(f);
-    mediaScanIntent.setData(contentUri);
-    this.sendBroadcast(mediaScanIntent);
-}
-*/
