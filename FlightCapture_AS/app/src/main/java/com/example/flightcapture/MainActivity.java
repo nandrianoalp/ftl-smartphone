@@ -469,15 +469,16 @@ public class MainActivity extends Activity
 		pitchValue = mPitchView.getText();
 		rollValue = mRollView.getText();
 
-		/* Combine sensor data into single string
+		// Combine sensor data into single string
 		String customEXIF = "Azimuth: " + azimuthValue + "; Pitch: " + pitchValue +
 				"; Roll: " + rollValue;
-		*/
+		/*
 		String azimuthString = "Azimuth: " + azimuthValue + ';';
 		String pitchString = "Pitch: " + pitchValue + ';';
 		String rollString = "Roll: " + rollValue + ';';
+		*/
 
-		/* Write sensor data to EXIF
+		// Write sensor data to EXIF
 		try {
 			ExifInterface exif = new ExifInterface(filePath);
 			exif.setAttribute("UserComment", customEXIF);
@@ -485,13 +486,15 @@ public class MainActivity extends Activity
 		} catch (IOException e) {
 			Log.d(TAG, "Error accessing file: " + filePath + " " + e.getMessage());
 		}
-		*/
+		//
 
-		// Write data to file
+		/*
+		// Write data to text file
 		writeToFile(fileName,fileName,filePath);
 		writeToFile(azimuthString,fileName,filePath);
 		writeToFile(pitchString,fileName,filePath);
 		writeToFile(rollString,fileName,filePath);
+		*/
 
 	}
 
@@ -500,7 +503,7 @@ public class MainActivity extends Activity
 		String folder = path.substring(0,lastPos);
 		String file = folder + "sensorData.txt";
 
-		/*
+		/* Not sure why this method doesn't quite work so have been trying method below
 		try {
 			OutputStreamWriter fileOut = new OutputStreamWriter(openFileOutput(file,Context.MODE_APPEND));
 			fileOut.write(data);
