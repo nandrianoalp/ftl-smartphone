@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -42,6 +43,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.media.ExifInterface;
+
+import org.apache.http.impl.io.ContentLengthInputStream;
 
 public class MainActivity extends Activity 
 		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback,
@@ -370,12 +373,13 @@ public class MainActivity extends Activity
 	@Override
 	public void onPictureTaken(byte[] data, Camera camera)
 	{
+
 		//Add GPS properties to image
 		addGpsToImg();
 
 		//Store the picture
-        File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
-        if (pictureFile == null){
+		File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
+		if (pictureFile == null){
             Log.d(TAG, "Error creating media file, check storage permissions.");
             return;
         }
@@ -391,7 +395,7 @@ public class MainActivity extends Activity
         }
 
 		// Add other sensor information to image
-		addSensorDataToImg(pictureFile.getAbsolutePath());
+		addSensorDataToImg(pictureFile.getName(), pictureFile.getPath());
 
 		//Must restart preview
 		camera.startPreview();
@@ -441,17 +445,19 @@ public class MainActivity extends Activity
 	public void addGpsToImg()
 	{
 		Camera.Parameters params = mCamera.getParameters();
+
 		// Set current GPS parameters
 		if(currentLocation != null) {
 			params.setGpsAltitude(currentLocation.getAltitude());
 			params.setGpsLatitude(currentLocation.getLatitude());
 			params.setGpsLongitude(currentLocation.getLongitude());
 			params.setGpsTimestamp(currentLocation.getTime()/1000);		// setGpsTimestamp takes seconds, not milliseconds (returned by getTime()
-		}		
+		}
+
 		mCamera.setParameters(params);
 	}
 
-	public void addSensorDataToImg(String filePath)
+	public void addSensorDataToImg(String fileName, String filePath)
 	{
 		// Variable declaration & initialization
 		CharSequence azimuthValue = null;
@@ -463,14 +469,57 @@ public class MainActivity extends Activity
 		pitchValue = mPitchView.getText();
 		rollValue = mRollView.getText();
 
-		// Combine sensor data into single string
+		/* Combine sensor data into single string
 		String customEXIF = "Azimuth: " + azimuthValue + "; Pitch: " + pitchValue +
 				"; Roll: " + rollValue;
+		*/
+		String azimuthString = "Azimuth: " + azimuthValue + ';';
+		String pitchString = "Pitch: " + pitchValue + ';';
+		String rollString = "Roll: " + rollValue + ';';
 
-		// Write sensor data to EXIF
-		ExifInterface exif = new ExifInterface(filePath);
-		exif.setAttribute("UserComment", customEXIF);
-		exif.saveAttributes();
+		/* Write sensor data to EXIF
+		try {
+			ExifInterface exif = new ExifInterface(filePath);
+			exif.setAttribute("UserComment", customEXIF);
+			exif.saveAttributes();
+		} catch (IOException e) {
+			Log.d(TAG, "Error accessing file: " + filePath + " " + e.getMessage());
+		}
+		*/
+
+		// Write data to file
+		writeToFile(fileName,fileName,filePath);
+		writeToFile(azimuthString,fileName,filePath);
+		writeToFile(pitchString,fileName,filePath);
+		writeToFile(rollString,fileName,filePath);
+
+	}
+
+	private void writeToFile(String data, String name, String path) {
+		int lastPos = path.length() - name.length();
+		String folder = path.substring(0,lastPos);
+		String file = folder + "sensorData.txt";
+
+		/*
+		try {
+			OutputStreamWriter fileOut = new OutputStreamWriter(openFileOutput(file,Context.MODE_APPEND));
+			fileOut.write(data);
+			fileOut.close();
+		}
+		catch (IOException e) {
+			Log.e("Exception", "File write failed: " + e.toString());
+		}
+		*/
+
+		try {
+			FileOutputStream fos = openFileOutput(file,getApplicationContext().MODE_APPEND);
+
+			fos.write(data.getBytes());
+			fos.close();
+		} catch (IOException e) {
+			Log.e("Exception", "File write failed: " + e.toString());
+		}
+
 	}
 
 	// Create a File for saving an image or video
