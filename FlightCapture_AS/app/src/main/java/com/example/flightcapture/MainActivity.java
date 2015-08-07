@@ -470,14 +470,15 @@ public class MainActivity extends Activity
 		rollValue = mRollView.getText();
 
 		// Combine sensor data into single string
+		/*
 		String customEXIF = "Azimuth: " + azimuthValue + "; Pitch: " + pitchValue +
 				"; Roll: " + rollValue;
-		/*
+		*/
 		String azimuthString = "Azimuth: " + azimuthValue + ';';
 		String pitchString = "Pitch: " + pitchValue + ';';
 		String rollString = "Roll: " + rollValue + ';';
-		*/
 
+		/*
 		// Write sensor data to EXIF
 		try {
 			ExifInterface exif = new ExifInterface(filePath);
@@ -486,15 +487,13 @@ public class MainActivity extends Activity
 		} catch (IOException e) {
 			Log.d(TAG, "Error accessing file: " + filePath + " " + e.getMessage());
 		}
-		//
+		*/
 
-		/*
 		// Write data to text file
 		writeToFile(fileName,fileName,filePath);
 		writeToFile(azimuthString,fileName,filePath);
 		writeToFile(pitchString,fileName,filePath);
 		writeToFile(rollString,fileName,filePath);
-		*/
 
 	}
 
