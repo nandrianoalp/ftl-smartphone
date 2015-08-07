@@ -41,6 +41,7 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.media.ExifInterface;
 
 public class MainActivity extends Activity 
 		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback,
@@ -371,7 +372,7 @@ public class MainActivity extends Activity
 	{
 		//Add GPS properties to image
 		addGpsToImg();
-		
+
 		//Store the picture
         File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
         if (pictureFile == null){
@@ -388,7 +389,10 @@ public class MainActivity extends Activity
         } catch (IOException e) {
             Log.d(TAG, "Error accessing file: " + e.getMessage());
         }
-		
+
+		// Add other sensor information to image
+		addSensorDataToImg(pictureFile.getAbsolutePath());
+
 		//Must restart preview
 		camera.startPreview();
 		CAMERA_READY = true;
@@ -446,7 +450,29 @@ public class MainActivity extends Activity
 		}		
 		mCamera.setParameters(params);
 	}
-	
+
+	public void addSensorDataToImg(String filePath)
+	{
+		// Variable declaration & initialization
+		CharSequence azimuthValue = null;
+		CharSequence pitchValue = null;
+		CharSequence rollValue = null;
+
+		// Get current sensor data
+		azimuthValue = mAzimuthView.getText();
+		pitchValue = mPitchView.getText();
+		rollValue = mRollView.getText();
+
+		// Combine sensor data into single string
+		String customEXIF = "Azimuth: " + azimuthValue + "; Pitch: " + pitchValue +
+				"; Roll: " + rollValue;
+
+		// Write sensor data to EXIF
+		ExifInterface exif = new ExifInterface(filePath);
+		exif.setAttribute("UserComment", customEXIF);
+		exif.saveAttributes();
+	}
+
 	// Create a File for saving an image or video
 	private static File getOutputMediaFile(int type, Context context){
 	    // To be safe, you should check that the SDCard is mounted
