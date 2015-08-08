@@ -258,7 +258,7 @@ public class MainActivity extends Activity
         recordCameraParameters();
 
         //Set camera settings to modified values
-        mCamera.setParameters(params);
+        //** mCamera.setParameters(params); 8/8/15: REMOVED BECUASE IT CRASHED THE APP!
         //Toast.makeText(getBaseContext(), "Camera Settings Initialized", Toast.LENGTH_SHORT).show();
     }
 
@@ -268,8 +268,8 @@ public class MainActivity extends Activity
         Camera.Parameters params = mCamera.getParameters();
         prevExposureCompensationValue = params.getExposureCompensation();
         prevIsoValue = params.get("iso");
-        Toast.makeText(getBaseContext(), prevExposureCompensationValue, Toast.LENGTH_SHORT).show(); // debugging purposes
-        Toast.makeText(getBaseContext(), prevIsoValue, Toast.LENGTH_SHORT).show(); // debugging purposes
+        //Toast.makeText(getBaseContext(), prevExposureCompensationValue, Toast.LENGTH_SHORT).show(); // debugging purposes
+        //Toast.makeText(getBaseContext(), prevIsoValue, Toast.LENGTH_SHORT).show(); // debugging purposes
     }
 
     public void updateCameraParameters()
@@ -279,22 +279,26 @@ public class MainActivity extends Activity
         Camera.Parameters params = mCamera.getParameters();
         if (testBit > 0){
             params.set("iso", "200");
+            // Toast.makeText(getBaseContext(), "ISO: 200", Toast.LENGTH_SHORT).show();
             testBit = 0;
         } else {
             params.set("iso", "1600");
+            // Toast.makeText(getBaseContext(), "ISO: 1600", Toast.LENGTH_SHORT).show();
             testBit = 1;
+            //testBit = 0;// for testing exp comp alone 8/8/15
         }
         if (prevExposureCompensationValue == minExposureCompensationValue) {
             params.setExposureCompensation(maxExposureCompensationValue);
+            // Toast.makeText(getBaseContext(), ((maxExposureCompensationValue) + ""), Toast.LENGTH_SHORT).show();
         } else {
             params.setExposureCompensation(prevExposureCompensationValue - 1); // params.getExposureCompensationStep());
+            // Toast.makeText(getBaseContext(), ((prevExposureCompensationValue - 1) + ""), Toast.LENGTH_SHORT).show();
         }
-
         mCamera.setParameters(params);
 
-        Camera.Parameters testParams = mCamera.getParameters();
-        Toast.makeText(getBaseContext(), testParams.getExposureCompensation(), Toast.LENGTH_SHORT).show(); // debugging purposes
-        Toast.makeText(getBaseContext(), testParams.get("iso"), Toast.LENGTH_SHORT).show(); // debugging purposes
+        //** Camera.Parameters testParams = mCamera.getParameters();
+        //** Toast.makeText(getBaseContext(), testParams.getExposureCompensation(), Toast.LENGTH_SHORT).show(); // debugging purposes
+        //** Toast.makeText(getBaseContext(), testParams.get("iso"), Toast.LENGTH_SHORT).show(); // debugging purposes
     }
 
     public void evaluatePreviousImage()
@@ -330,6 +334,7 @@ public class MainActivity extends Activity
 			// Catch and continue with defaults
 		}
 		Toast.makeText(getBaseContext(), "Time Mode", Toast.LENGTH_SHORT).show();
+        initCameraParameters();
 		continuousCapture();
 	}
 	
@@ -372,7 +377,9 @@ public class MainActivity extends Activity
 			if ((CAMERA_READY == true) && (FIRST_DISTANCE == false)) {
 				TOTAL_COUNT++;
 				CAMERA_READY = false;
+                updateCameraParameters();
 				mCamera.takePicture( this, null, null, this);
+                recordCameraParameters();
 			}
 		} else {	// DISTANCE == false, Snap a series of photos based on time passed								
 			while(true) {
@@ -380,7 +387,9 @@ public class MainActivity extends Activity
 				if (((currentTime - prevTime) > TIME_TO_TRAVEL) && (CAMERA_READY == true)) {	// Not the right way to do this
 					TOTAL_COUNT++;
 					CAMERA_READY = false;
+                    updateCameraParameters();
 					mCamera.takePicture( this, null, null, this);
+                    recordCameraParameters();
 					break;
 				}						
 			}
