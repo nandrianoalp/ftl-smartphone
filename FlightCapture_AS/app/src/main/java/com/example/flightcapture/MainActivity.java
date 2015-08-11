@@ -528,23 +528,20 @@ public class MainActivity extends Activity
 
 		// /*
 		// Write data to text file
-		writeToFile(fileName,fileName,filePath);
-		writeToFile("\r\n",fileName,filePath);
-		writeToFile(azimuthString,fileName,filePath);
-		writeToFile("\r\n",fileName,filePath);
-		writeToFile(pitchString,fileName,filePath);
-		writeToFile("\r\n",fileName,filePath);
-		writeToFile(rollString,fileName,filePath);
-		writeToFile("\r\n",fileName,filePath);
-		writeToFile("\r\n",fileName,filePath);
+		writeToFile(fileName);
+		writeToFile("\r\n");
+		writeToFile(azimuthString);
+		writeToFile("\r\n");
+		writeToFile(pitchString);
+		writeToFile("\r\n");
+		writeToFile(rollString);
+		writeToFile("\r\n");
+		writeToFile("\r\n");
 		// */
 	}
 
-	private void writeToFile(String data, String name, String path) {
-		int lastPos = path.length() - name.length();
-		String folder = path.substring(0,lastPos);
-		String filePath = folder + "sensorData.txt";
-
+	private void writeToFile(String data) {
+		// Declare & initialize variables
 		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
 				Environment.DIRECTORY_PICTURES), storeDir);
 
@@ -582,11 +579,12 @@ public class MainActivity extends Activity
 			*/
 
 			FileOutputStream fOut = new FileOutputStream(sensorDataFile.getPath(),true);
-			OutputStreamWriter myOutWriter =
-					new OutputStreamWriter(fOut);
+			OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+
 			myOutWriter.append(data);
 			myOutWriter.close();
 			fOut.close();
+
 		} catch (IOException e) {
 			Log.e("Exception", "File write failed: " + e.toString());
 		}
