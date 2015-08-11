@@ -256,7 +256,7 @@ public class MainActivity extends Activity
         maxExposureCompensationValue = params.getMaxExposureCompensation();
         minExposureCompensationValue = params.getMinExposureCompensation();
 
-        initDataFile();
+        initDataFile("ISO Value,Exp Comp Value");
 
         recordCameraParameters();
 
@@ -265,25 +265,36 @@ public class MainActivity extends Activity
         //Toast.makeText(getBaseContext(), "Camera Settings Initialized", Toast.LENGTH_SHORT).show();
     }
 
-    public void initDataFile()
-    {
+    public void initDataFile(String colTitles)
+    {   // NOTE: Column titles aren't getting recorded, not sure why
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
          File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), storeDir);
         dataFile = new File(mediaStorageDir.getPath() + File.separator +
-                "DATA_"+ timeStamp + ".txt");
-    }
-
-    public void recordData()
-    {   // Records a data file to the same directory as the pictures
-        // FINISH BY ADDING INPUTS FOR RECORDING!!!!
-
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String dataString = timeStamp +",";
-
+                "DATA_"+ timeStamp + ".csv");
+        String titleString = "Time Stamp," + colTitles + "\n";
         try {
             FileOutputStream fos = new FileOutputStream(dataFile, true);
+            fos.write(titleString.getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+        }
+
+    }
+
+    public void recordData(String dataString)
+    {   // Records a data file to the same directory as the pictures
+        // FINISH BY ADDING INPUTS FOR RECORDING!!!!
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeString = timeStamp + "," ;
+        try {
+            FileOutputStream fos = new FileOutputStream(dataFile, true);
+            fos.write(timeString.getBytes());
             fos.write(dataString.getBytes());
+            fos.write(("\n").getBytes());
             fos.close();
         } catch (FileNotFoundException e) {
             Log.d(TAG, "File not found: " + e.getMessage());
@@ -298,8 +309,7 @@ public class MainActivity extends Activity
         Camera.Parameters params = mCamera.getParameters();
         prevExposureCompensationValue = params.getExposureCompensation();
         prevIsoValue = params.get("iso");
-
-        recordData();
+        recordData(prevIsoValue + "," + prevExposureCompensationValue);
         //Toast.makeText(getBaseContext(), prevExposureCompensationValue, Toast.LENGTH_SHORT).show(); // debugging purposes
         //Toast.makeText(getBaseContext(), prevIsoValue, Toast.LENGTH_SHORT).show(); // debugging purposes
     }
