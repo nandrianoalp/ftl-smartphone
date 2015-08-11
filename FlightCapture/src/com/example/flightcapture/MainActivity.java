@@ -74,7 +74,8 @@ public class MainActivity extends Activity
     public int maxExposureCompensationValue;
     public int minExposureCompensationValue;
     public int testBit = 0; // used to test camera controls without a randomness
-	
+	public File dataFile;
+
 //	PowerManager pm;
 //	PowerManager.WakeLock mWakeLock;
 	
@@ -255,6 +256,8 @@ public class MainActivity extends Activity
         maxExposureCompensationValue = params.getMaxExposureCompensation();
         minExposureCompensationValue = params.getMinExposureCompensation();
 
+        initDataFile();
+
         recordCameraParameters();
 
         //Set camera settings to modified values
@@ -262,12 +265,41 @@ public class MainActivity extends Activity
         //Toast.makeText(getBaseContext(), "Camera Settings Initialized", Toast.LENGTH_SHORT).show();
     }
 
+    public void initDataFile()
+    {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), storeDir);
+        dataFile = new File(mediaStorageDir.getPath() + File.separator +
+                "DATA_"+ timeStamp + ".txt");
+    }
+
+    public void recordData()
+    {   // Records a data file to the same directory as the pictures
+        // FINISH BY ADDING INPUTS FOR RECORDING!!!!
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String dataString = timeStamp +",";
+
+        try {
+            FileOutputStream fos = new FileOutputStream(dataFile, true);
+            fos.write(dataString.getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+        }
+
+    }
 
     public void recordCameraParameters()
     { // Called immediately after the photo is taken to record current parameters (b/ potentially in constant flux during preview)
         Camera.Parameters params = mCamera.getParameters();
         prevExposureCompensationValue = params.getExposureCompensation();
         prevIsoValue = params.get("iso");
+
+        recordData();
         //Toast.makeText(getBaseContext(), prevExposureCompensationValue, Toast.LENGTH_SHORT).show(); // debugging purposes
         //Toast.makeText(getBaseContext(), prevIsoValue, Toast.LENGTH_SHORT).show(); // debugging purposes
     }
@@ -498,6 +530,8 @@ public class MainActivity extends Activity
 
 	    File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
 	              Environment.DIRECTORY_PICTURES), storeDir);
+
+
 	    // This location works best if you want the created images to be shared
 	    // between applications and persist after your app has been uninstalled.
 	    
