@@ -395,7 +395,7 @@ public class MainActivity extends Activity
         }
 
 		// Add other sensor information to image
-		addSensorDataToImg(pictureFile.getName(), pictureFile.getPath());
+		addSensorDataToImg(pictureFile);
 
 		//Must restart preview
 		camera.startPreview();
@@ -457,54 +457,113 @@ public class MainActivity extends Activity
 		mCamera.setParameters(params);
 	}
 
-	public void addSensorDataToImg(String fileName, String filePath)
+	public void addSensorDataToImg(File pictureFile)
 	{
 		// Variable declaration & initialization
-		CharSequence azimuthValue = null;
-		CharSequence pitchValue = null;
-		CharSequence rollValue = null;
-
-		// Get current sensor data
-		azimuthValue = mAzimuthView.getText();
-		pitchValue = mPitchView.getText();
-		rollValue = mRollView.getText();
+		String fileName = pictureFile.getName();
+		String filePath = pictureFile.getAbsolutePath();
+		CharSequence azimuthValue = mAzimuthView.getText();;
+		CharSequence pitchValue = mPitchView.getText();
+		CharSequence rollValue = mRollView.getText();
 
 		// Combine sensor data into single string
 		/*
 		String customEXIF = "Azimuth: " + azimuthValue + "; Pitch: " + pitchValue +
-				"; Roll: " + rollValue;
+				"; Roll: " + rollValue + ';';
 		*/
+		// /*
 		String azimuthString = "Azimuth: " + azimuthValue + ';';
 		String pitchString = "Pitch: " + pitchValue + ';';
 		String rollString = "Roll: " + rollValue + ';';
+		// */
 
 		/*
 		// Write sensor data to EXIF
 		try {
 			ExifInterface exif = new ExifInterface(filePath);
-			exif.setAttribute("UserComment", customEXIF);
-			exif.saveAttributes();
+
+			// Read all GPS attributes
+			double altitude = currentLocation.getAltitude();
+			double latitude = currentLocation.getLatitude();
+			double longitude = currentLocation.getLongitude();
+			double time = currentLocation.getTime() / 1000;
+
+			// Apparently exifInterface will not read the GPS tags in EXIF correctly & instead
+			// returns null values
+			String gpsAlt = String.valueOf(altitude);
+			String gpsLat = String.valueOf(latitude);
+			String gpsLong = String.valueOf(longitude);
+			String gpsTimeStamp = String.valueOf(time);
+
+			/*
+			String gpsLatRef = exif.getAttribute(exif.TAG_GPS_LATITUDE_REF);
+			String gpsLat = exif.getAttribute(exif.TAG_GPS_LATITUDE);
+			String gpsLongRef = exif.getAttribute(exif.TAG_GPS_LONGITUDE_REF);
+			String gpsLong = exif.getAttribute(exif.TAG_GPS_LONGITUDE);
+			String gpsAltRef = exif.getAttribute(exif.TAG_GPS_ALTITUDE_REF);
+			String gpsAlt = exif.getAttribute(exif.TAG_GPS_ALTITUDE);
+			String gpsTimeStamp = exif.getAttribute(exif.TAG_GPS_TIMESTAMP);
+			String gpsDateStamp = exif.getAttribute(exif.TAG_GPS_DATESTAMP);
+
+			// Set all GPS attributes
+			// exif.setAttribute("GPS Latitude Ref",gpsLatRef);
+			// exif.setAttribute(exif.TAG_GPS_LATITUDE,gpsLat);
+			// exif.setAttribute("GPS Longitude Ref",gpsLongRef);
+			// exif.setAttribute(exif.TAG_GPS_LONGITUDE,gpsLong);
+			// exif.setAttribute("GPS Altitude Ref",gpsAltRef);
+			// exif.setAttribute(exif.TAG_GPS_ALTITUDE,gpsAlt);
+			// exif.setAttribute(exif.TAG_GPS_TIMESTAMP,gpsTimeStamp);
+			// exif.setAttribute("GPS Date Stamp",gpsDateStamp);
+
+			// Set azimuth, pitch, & roll
+			// exif.setAttribute("UserComment", customEXIF);
+
+			// Save all attributes
+			// exif.saveAttributes();
+
 		} catch (IOException e) {
 			Log.d(TAG, "Error accessing file: " + filePath + " " + e.getMessage());
 		}
 		*/
 
+		// /*
 		// Write data to text file
 		writeToFile(fileName,fileName,filePath);
+		writeToFile("\r\n",fileName,filePath);
 		writeToFile(azimuthString,fileName,filePath);
+		writeToFile("\r\n",fileName,filePath);
 		writeToFile(pitchString,fileName,filePath);
+		writeToFile("\r\n",fileName,filePath);
 		writeToFile(rollString,fileName,filePath);
-
+		writeToFile("\r\n",fileName,filePath);
+		writeToFile("\r\n",fileName,filePath);
+		// */
 	}
 
 	private void writeToFile(String data, String name, String path) {
 		int lastPos = path.length() - name.length();
 		String folder = path.substring(0,lastPos);
-		String file = folder + "sensorData.txt";
+		String filePath = folder + "sensorData.txt";
 
-		/* Not sure why this method doesn't quite work so have been trying method below
+		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+				Environment.DIRECTORY_PICTURES), storeDir);
+
+		File sensorDataFile = new File(mediaStorageDir.getAbsolutePath() + File.separator + "sensorData.txt");
+
+		// Create sensor data file if it does now exist
+		if(!sensorDataFile.exists()) {
+			try {
+				sensorDataFile.createNewFile();
+				sensorDataFile.setWritable(true);
+			}
+			catch (IOException e) {
+				Log.e("Exception", "File creation failed: " + e.toString());
+			}
+		}
+
+		/*
 		try {
-			OutputStreamWriter fileOut = new OutputStreamWriter(openFileOutput(file,Context.MODE_APPEND));
+			OutputStreamWriter fileOut = new OutputStreamWriter(sensorDataFile, Context.MODE_APPEND);
 			fileOut.write(data);
 			fileOut.close();
 		}
@@ -513,14 +572,25 @@ public class MainActivity extends Activity
 		}
 		*/
 
+		// /*
 		try {
-			FileOutputStream fos = openFileOutput(file,getApplicationContext().MODE_APPEND);
+			/*
+			FileOutputStream fos = openFileOutput(sensorDataFile.getAbsolutePath(),getApplicationContext().MODE_APPEND);
 
 			fos.write(data.getBytes());
 			fos.close();
+			*/
+
+			FileOutputStream fOut = new FileOutputStream(sensorDataFile.getPath(),true);
+			OutputStreamWriter myOutWriter =
+					new OutputStreamWriter(fOut);
+			myOutWriter.append(data);
+			myOutWriter.close();
+			fOut.close();
 		} catch (IOException e) {
 			Log.e("Exception", "File write failed: " + e.toString());
 		}
+		// */
 
 	}
 
