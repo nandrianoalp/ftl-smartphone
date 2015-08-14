@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -41,6 +42,9 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.media.ExifInterface;
+
+import org.apache.http.impl.io.ContentLengthInputStream;
 
 public class MainActivity extends Activity 
 		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback,
@@ -369,12 +373,13 @@ public class MainActivity extends Activity
 	@Override
 	public void onPictureTaken(byte[] data, Camera camera)
 	{
+
 		//Add GPS properties to image
 		addGpsToImg();
-		
+
 		//Store the picture
-        File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
-        if (pictureFile == null){
+		File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
+		if (pictureFile == null){
             Log.d(TAG, "Error creating media file, check storage permissions.");
             return;
         }
@@ -388,7 +393,10 @@ public class MainActivity extends Activity
         } catch (IOException e) {
             Log.d(TAG, "Error accessing file: " + e.getMessage());
         }
-		
+
+		// Add other sensor information to image
+		addSensorDataToImg(pictureFile);
+
 		//Must restart preview
 		camera.startPreview();
 		CAMERA_READY = true;
@@ -437,16 +445,153 @@ public class MainActivity extends Activity
 	public void addGpsToImg()
 	{
 		Camera.Parameters params = mCamera.getParameters();
+
 		// Set current GPS parameters
 		if(currentLocation != null) {
 			params.setGpsAltitude(currentLocation.getAltitude());
 			params.setGpsLatitude(currentLocation.getLatitude());
 			params.setGpsLongitude(currentLocation.getLongitude());
 			params.setGpsTimestamp(currentLocation.getTime()/1000);		// setGpsTimestamp takes seconds, not milliseconds (returned by getTime()
-		}		
+		}
+
 		mCamera.setParameters(params);
 	}
-	
+
+	public void addSensorDataToImg(File pictureFile)
+	{
+		// Variable declaration & initialization
+		String fileName = pictureFile.getName();
+		String filePath = pictureFile.getAbsolutePath();
+		CharSequence azimuthValue = mAzimuthView.getText();;
+		CharSequence pitchValue = mPitchView.getText();
+		CharSequence rollValue = mRollView.getText();
+
+		// Combine sensor data into single string
+		/*
+		String customEXIF = "Azimuth: " + azimuthValue + "; Pitch: " + pitchValue +
+				"; Roll: " + rollValue + ';';
+		*/
+		// /*
+		String azimuthString = "Azimuth: " + azimuthValue + ';';
+		String pitchString = "Pitch: " + pitchValue + ';';
+		String rollString = "Roll: " + rollValue + ';';
+		// */
+
+		/*
+		// Write sensor data to EXIF
+		try {
+			ExifInterface exif = new ExifInterface(filePath);
+
+			// Read all GPS attributes
+			double altitude = currentLocation.getAltitude();
+			double latitude = currentLocation.getLatitude();
+			double longitude = currentLocation.getLongitude();
+			double time = currentLocation.getTime() / 1000;
+
+			// Apparently exifInterface will not read the GPS tags in EXIF correctly & instead
+			// returns null values
+			String gpsAlt = String.valueOf(altitude);
+			String gpsLat = String.valueOf(latitude);
+			String gpsLong = String.valueOf(longitude);
+			String gpsTimeStamp = String.valueOf(time);
+
+			/*
+			String gpsLatRef = exif.getAttribute(exif.TAG_GPS_LATITUDE_REF);
+			String gpsLat = exif.getAttribute(exif.TAG_GPS_LATITUDE);
+			String gpsLongRef = exif.getAttribute(exif.TAG_GPS_LONGITUDE_REF);
+			String gpsLong = exif.getAttribute(exif.TAG_GPS_LONGITUDE);
+			String gpsAltRef = exif.getAttribute(exif.TAG_GPS_ALTITUDE_REF);
+			String gpsAlt = exif.getAttribute(exif.TAG_GPS_ALTITUDE);
+			String gpsTimeStamp = exif.getAttribute(exif.TAG_GPS_TIMESTAMP);
+			String gpsDateStamp = exif.getAttribute(exif.TAG_GPS_DATESTAMP);
+
+			// Set all GPS attributes
+			// exif.setAttribute("GPS Latitude Ref",gpsLatRef);
+			// exif.setAttribute(exif.TAG_GPS_LATITUDE,gpsLat);
+			// exif.setAttribute("GPS Longitude Ref",gpsLongRef);
+			// exif.setAttribute(exif.TAG_GPS_LONGITUDE,gpsLong);
+			// exif.setAttribute("GPS Altitude Ref",gpsAltRef);
+			// exif.setAttribute(exif.TAG_GPS_ALTITUDE,gpsAlt);
+			// exif.setAttribute(exif.TAG_GPS_TIMESTAMP,gpsTimeStamp);
+			// exif.setAttribute("GPS Date Stamp",gpsDateStamp);
+
+			// Set azimuth, pitch, & roll
+			// exif.setAttribute("UserComment", customEXIF);
+
+			// Save all attributes
+			// exif.saveAttributes();
+
+		} catch (IOException e) {
+			Log.d(TAG, "Error accessing file: " + filePath + " " + e.getMessage());
+		}
+		*/
+
+		// /*
+		// Write data to text file
+		writeToFile(fileName);
+		writeToFile("\r\n");
+		writeToFile(azimuthString);
+		writeToFile("\r\n");
+		writeToFile(pitchString);
+		writeToFile("\r\n");
+		writeToFile(rollString);
+		writeToFile("\r\n");
+		writeToFile("\r\n");
+		// */
+	}
+
+	private void writeToFile(String data) {
+		// Declare & initialize variables
+		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+				Environment.DIRECTORY_PICTURES), storeDir);
+
+		File sensorDataFile = new File(mediaStorageDir.getAbsolutePath() + File.separator + "sensorData.txt");
+
+		// Create sensor data file if it does now exist
+		if(!sensorDataFile.exists()) {
+			try {
+				sensorDataFile.createNewFile();
+				sensorDataFile.setWritable(true);
+			}
+			catch (IOException e) {
+				Log.e("Exception", "File creation failed: " + e.toString());
+			}
+		}
+
+		/*
+		try {
+			OutputStreamWriter fileOut = new OutputStreamWriter(sensorDataFile, Context.MODE_APPEND);
+			fileOut.write(data);
+			fileOut.close();
+		}
+		catch (IOException e) {
+			Log.e("Exception", "File write failed: " + e.toString());
+		}
+		*/
+
+		// /*
+		try {
+			/*
+			FileOutputStream fos = openFileOutput(sensorDataFile.getAbsolutePath(),getApplicationContext().MODE_APPEND);
+
+			fos.write(data.getBytes());
+			fos.close();
+			*/
+
+			FileOutputStream fOut = new FileOutputStream(sensorDataFile.getPath(),true);
+			OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+
+			myOutWriter.append(data);
+			myOutWriter.close();
+			fOut.close();
+
+		} catch (IOException e) {
+			Log.e("Exception", "File write failed: " + e.toString());
+		}
+		// */
+
+	}
+
 	// Create a File for saving an image or video
 	private static File getOutputMediaFile(int type, Context context){
 	    // To be safe, you should check that the SDCard is mounted
