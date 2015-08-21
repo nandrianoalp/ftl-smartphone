@@ -1056,4 +1056,133 @@ public class MainActivity extends Activity
 	};
 	// END ADDED SENSOR CODE
 
+
+    /* GREGG'S MERGE */
+    public int prevExposureCompensationValue;
+    public String prevIsoValue;
+    public int maxExposureCompensationValue;
+    public int minExposureCompensationValue;
+    public int testBit = 0; // used to test camera controls without a randomness
+    public File dataFile;
+
+
+    public void initCameraParameters()
+    {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo) [Note: I believe that the preview should be started first]
+
+        //** INITIALIZE CAMERA PARAMETERS **//
+
+        //Retrieve current camera parameter settings
+        Camera.Parameters params = mCamera.getParameters(); // Request Current Paramaters
+
+        // Edit camera parameter settings
+        // params.setAutoExposureLock(true); // Lock Auto Exposure so it can be controlled per snap, CHECK MIN VERSION
+        // params.setAutoWhiteBalanceLock(true); // Lock AWB so we can post process the images, CHECK MIN VERSION
+        // params.setWhiteBalance("no adjustment"); //this string value could we wrong, DECIDED TO USE AUTO WHITE BALANCE
+        // Set GPS Altitude: 7/26/2015, waiting for KML group to decide GPS/ALT implementation. Remember to look at current addGpsToImg() etc. implementation
+        params.setFocusMode("FOCUS_MOD_EDOF"); // set to continuous focus mode
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        storeDir = "TimePics_" + timeStamp;// set directory to save file (if external remember to put in manifest file)
+        params.setPictureFormat(256); //256 represents JPEG format, IS THIS NECESSARY?
+
+        maxExposureCompensationValue = params.getMaxExposureCompensation();
+        minExposureCompensationValue = params.getMinExposureCompensation();
+
+        initDataFile("ISO Value,Exp Comp Value");
+
+        recordCameraParameters();
+
+        //Set camera settings to modified values
+        //** mCamera.setParameters(params); 8/8/15: REMOVED BECUASE IT CRASHED THE APP!
+        //Toast.makeText(getBaseContext(), "Camera Settings Initialized", Toast.LENGTH_SHORT).show();
+    }
+
+    public void initDataFile(String colTitles)
+    {   // NOTE: Column titles aren't getting recorded, not sure why
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), storeDir);
+        dataFile = new File(mediaStorageDir.getPath() + File.separator +
+                "DATA_"+ timeStamp + ".csv");
+        String titleString = "Time Stamp," + colTitles + "\n";
+        try {
+            FileOutputStream fos = new FileOutputStream(dataFile, true);
+            fos.write(titleString.getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+        }
+
+    }
+
+    public void recordData(String dataString)
+    {   // Records a data file to the same directory as the pictures
+        // FINISH BY ADDING INPUTS FOR RECORDING!!!!
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeString = timeStamp + "," ;
+        try {
+            FileOutputStream fos = new FileOutputStream(dataFile, true);
+            fos.write(timeString.getBytes());
+            fos.write(dataString.getBytes());
+            fos.write(("\n").getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+        }
+
+    }
+
+    public void recordCameraParameters()
+    { // Called immediately after the photo is taken to record current parameters (b/ potentially in constant flux during preview)
+        Camera.Parameters params = mCamera.getParameters();
+        prevExposureCompensationValue = params.getExposureCompensation();
+        prevIsoValue = params.get("iso");
+        recordData(prevIsoValue + "," + prevExposureCompensationValue);
+        //Toast.makeText(getBaseContext(), prevExposureCompensationValue, Toast.LENGTH_SHORT).show(); // debugging purposes
+        //Toast.makeText(getBaseContext(), prevIsoValue, Toast.LENGTH_SHORT).show(); // debugging purposes
+    }
+
+    public void updateCameraParameters()
+    {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo)
+        evaluatePreviousImage(); // should return new values for exposure comp and iso
+
+        Camera.Parameters params = mCamera.getParameters();
+        if (testBit > 0){
+            params.set("iso", "200");
+            // Toast.makeText(getBaseContext(), "ISO: 200", Toast.LENGTH_SHORT).show();
+            testBit = 0;
+        } else {
+            params.set("iso", "1600");
+            // Toast.makeText(getBaseContext(), "ISO: 1600", Toast.LENGTH_SHORT).show();
+            testBit = 1;
+            //testBit = 0;// for testing exp comp alone 8/8/15
+        }
+        if (prevExposureCompensationValue == minExposureCompensationValue) {
+            params.setExposureCompensation(maxExposureCompensationValue);
+            // Toast.makeText(getBaseContext(), ((maxExposureCompensationValue) + ""), Toast.LENGTH_SHORT).show();
+        } else {
+            params.setExposureCompensation(prevExposureCompensationValue - 1); // params.getExposureCompensationStep());
+            // Toast.makeText(getBaseContext(), ((prevExposureCompensationValue - 1) + ""), Toast.LENGTH_SHORT).show();
+        }
+        mCamera.setParameters(params);
+
+        //** Camera.Parameters testParams = mCamera.getParameters();
+        //** Toast.makeText(getBaseContext(), testParams.getExposureCompensation(), Toast.LENGTH_SHORT).show(); // debugging purposes
+        //** Toast.makeText(getBaseContext(), testParams.get("iso"), Toast.LENGTH_SHORT).show(); // debugging purposes
+    }
+
+    public void evaluatePreviousImage()
+    { // Once the evaluation algorithms are settled to measure jitter, noise, and exposure we will implement here
+
+        // open/find previous image, how to get previous image?
+
+        // Implement algorithm or call library here
+
+        return;// calculate and return new exposure comp and iso values
+    }
+
+
 }
