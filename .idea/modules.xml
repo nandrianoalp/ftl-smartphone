@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/FTL_FlightCapture/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/22.1.1.iml" filepath="$PROJECT_DIR$/FTL_FlightCapture/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/22.1.1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FTL_FlightCapture/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/22.1.1.iml" filepath="$PROJECT_DIR$/FTL_FlightCapture/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/22.1.1.iml" />
       <module fileurl="file://$PROJECT_DIR$/FlightCapture/FlightCapture.iml" filepath="$PROJECT_DIR$/FlightCapture/FlightCapture.iml" />
       <module fileurl="file://$PROJECT_DIR$/ImageCapture/ImageCapture.iml" filepath="$PROJECT_DIR$/ImageCapture/ImageCapture.iml" />
       <module fileurl="file://$PROJECT_DIR$/ImageCaptureTest/ImageCaptureTest.iml" filepath="$PROJECT_DIR$/ImageCaptureTest/ImageCaptureTest.iml" />
@@ -10,11 +12,13 @@
       <module fileurl="file://$PROJECT_DIR$/htc_FlightCapture/app/build/generated/source/buildConfig/androidTest/androidTest2.iml" filepath="$PROJECT_DIR$/htc_FlightCapture/app/build/generated/source/buildConfig/androidTest/androidTest2.iml" />
       <module fileurl="file://$PROJECT_DIR$/ImageCaptureTest_AS/app/build/generated/source/buildConfig/androidTest/androidTest3.iml" filepath="$PROJECT_DIR$/ImageCaptureTest_AS/app/build/generated/source/buildConfig/androidTest/androidTest3.iml" />
       <module fileurl="file://$PROJECT_DIR$/FlightCapture_AS/app/build/generated/source/buildConfig/buildConfig.iml" filepath="$PROJECT_DIR$/FlightCapture_AS/app/build/generated/source/buildConfig/buildConfig.iml" />
-      <module fileurl="file://$PROJECT_DIR$/htc_FlightCapture/app/build/generated/source/buildConfig/buildConfig1.iml" filepath="$PROJECT_DIR$/htc_FlightCapture/app/build/generated/source/buildConfig/buildConfig1.iml" />
-      <module fileurl="file://$PROJECT_DIR$/ImageCapture_AS/app/build/generated/source/buildConfig/buildConfig2.iml" filepath="$PROJECT_DIR$/ImageCapture_AS/app/build/generated/source/buildConfig/buildConfig2.iml" />
-      <module fileurl="file://$PROJECT_DIR$/ImageCaptureTest_AS/app/build/generated/source/buildConfig/buildConfig3.iml" filepath="$PROJECT_DIR$/ImageCaptureTest_AS/app/build/generated/source/buildConfig/buildConfig3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FTL_FlightCapture/app/build/generated/source/buildConfig/buildConfig1.iml" filepath="$PROJECT_DIR$/FTL_FlightCapture/app/build/generated/source/buildConfig/buildConfig1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/htc_FlightCapture/app/build/generated/source/buildConfig/buildConfig2.iml" filepath="$PROJECT_DIR$/htc_FlightCapture/app/build/generated/source/buildConfig/buildConfig2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ImageCapture_AS/app/build/generated/source/buildConfig/buildConfig3.iml" filepath="$PROJECT_DIR$/ImageCapture_AS/app/build/generated/source/buildConfig/buildConfig3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ImageCaptureTest_AS/app/build/generated/source/buildConfig/buildConfig4.iml" filepath="$PROJECT_DIR$/ImageCaptureTest_AS/app/build/generated/source/buildConfig/buildConfig4.iml" />
       <module fileurl="file://$PROJECT_DIR$/FlightCapture_AS/app/build/intermediates/manifests/androidTest/debug/debug.iml" filepath="$PROJECT_DIR$/FlightCapture_AS/app/build/intermediates/manifests/androidTest/debug/debug.iml" />
       <module fileurl="file://$PROJECT_DIR$/FlightCapture_AS/app/build/intermediates/manifests/full/debug/debug.iml" filepath="$PROJECT_DIR$/FlightCapture_AS/app/build/intermediates/manifests/full/debug/debug.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FTL_FlightCapture/app/build/intermediates/manifests/full/debug/debug.iml" filepath="$PROJECT_DIR$/FTL_FlightCapture/app/build/intermediates/manifests/full/debug/debug.iml" />
       <module fileurl="file://$PROJECT_DIR$/htc_FlightCapture/app/build/intermediates/manifests/androidTest/debug/debug.iml" filepath="$PROJECT_DIR$/htc_FlightCapture/app/build/intermediates/manifests/androidTest/debug/debug.iml" />
       <module fileurl="file://$PROJECT_DIR$/htc_FlightCapture/app/build/intermediates/manifests/full/debug/debug.iml" filepath="$PROJECT_DIR$/htc_FlightCapture/app/build/intermediates/manifests/full/debug/debug.iml" />
       <module fileurl="file://$PROJECT_DIR$/ImageCapture_AS/app/build/intermediates/manifests/androidTest/debug/debug.iml" filepath="$PROJECT_DIR$/ImageCapture_AS/app/build/intermediates/manifests/androidTest/debug/debug.iml" />
