@@ -146,6 +146,7 @@ public class MainActivity extends Activity
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);		// Band-aid
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);	// Band-aid
 
+
 		// ADDED SENSOR CODE
 		gyroOrientation[0] = 0.0f;
 		gyroOrientation[1] = 0.0f;
@@ -308,6 +309,9 @@ public class MainActivity extends Activity
 			// Catch and continue with defaults
 		}
 		Toast.makeText(getBaseContext(), "Time Mode", Toast.LENGTH_SHORT).show();
+
+        initCameraParameters();
+        initDataFile();
 		continuousCapture();
 	}
 	
@@ -332,6 +336,9 @@ public class MainActivity extends Activity
 			// Catch and continue with defaults
 		}
 		Toast.makeText(getBaseContext(), "Distance Mode", Toast.LENGTH_SHORT).show();
+
+        initCameraParameters();
+        initDataFile();
 		continuousCapture();
 	}
 	
@@ -395,7 +402,12 @@ public class MainActivity extends Activity
         }
 
 		// Add other sensor information to image
-		addSensorDataToImg(pictureFile);
+		// addSensorDataToImg(pictureFile); Replace with recordDataFile by Gregg
+
+        recordCameraParameters(); // update the camera parameters saved in global variables
+        recordDataFile(pictureFile); // add a line item to the CSV data file for this image
+
+        updateCameraParameters(pictureFile); // evaluate the image just take and correct settings for next image
 
 		//Must restart preview
 		camera.startPreview();
@@ -442,7 +454,7 @@ public class MainActivity extends Activity
 		// Do Nothing
 	}
 	
-	public void addGpsToImg()
+	public void on()
 	{
 		Camera.Parameters params = mCamera.getParameters();
 
@@ -1062,7 +1074,7 @@ public class MainActivity extends Activity
     public String prevIsoValue;
     public int maxExposureCompensationValue;
     public int minExposureCompensationValue;
-    public int testBit = 0; // used to test camera controls without a randomness
+    public int testBit = 0; // used to test camera controls, used to alternate ISO settings
     public File dataFile;
 
 
@@ -1082,12 +1094,10 @@ public class MainActivity extends Activity
         params.setFocusMode("FOCUS_MOD_EDOF"); // set to continuous focus mode
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         storeDir = "TimePics_" + timeStamp;// set directory to save file (if external remember to put in manifest file)
-        params.setPictureFormat(256); //256 represents JPEG format, IS THIS NECESSARY?
+        //params.setPictureFormat(256); //256 represents JPEG format, IS THIS NECESSARY?
 
         maxExposureCompensationValue = params.getMaxExposureCompensation();
         minExposureCompensationValue = params.getMinExposureCompensation();
-
-        initDataFile("ISO Value,Exp Comp Value");
 
         recordCameraParameters();
 
@@ -1096,14 +1106,14 @@ public class MainActivity extends Activity
         //Toast.makeText(getBaseContext(), "Camera Settings Initialized", Toast.LENGTH_SHORT).show();
     }
 
-    public void initDataFile(String colTitles)
+    public void initDataFile()
     {   // NOTE: Column titles aren't getting recorded, not sure why
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), storeDir);
         dataFile = new File(mediaStorageDir.getPath() + File.separator +
                 "DATA_"+ timeStamp + ".csv");
-        String titleString = "Time Stamp," + colTitles + "\n";
+        String titleString = "FILENAME,TIME,ISO,EXPCOMP,AZIMUTH,PITCH,ROLL,GPS TIME,ALTITUDE,LATITUDE,LONGITUDE,GPS ACCURACY/r/n" //"Time Stamp," + colTitles + "\n";
         try {
             FileOutputStream fos = new FileOutputStream(dataFile, true);
             fos.write(titleString.getBytes());
@@ -1116,11 +1126,37 @@ public class MainActivity extends Activity
 
     }
 
-    public void recordData(String dataString)
+    public void recordDataFile(File pictureFile)
     {   // Records a data file to the same directory as the pictures
         // FINISH BY ADDING INPUTS FOR RECORDING!!!!
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String timeString = timeStamp + "," ;
+
+        CharSequence azimuthValue = mAzimuthView.getText();;
+        CharSequence pitchValue = mPitchView.getText();
+        CharSequence rollValue = mRollView.getText();
+
+        String fileName = pictureFile.getName();
+
+        currentAltitude = currentLocation.getAltitude();
+        currentLatitude = currentLocation.getLatitude();
+        currentLongitude = currentLocation.getLongitude();
+        currentTimestamp = currentLocation.getTime();
+        currentGPSaccuracy = currentLocation.getAccuracy();
+        //recordData(prevIsoValue + "," + prevExposureCompensationValue);
+
+        String dataString = pictureFile + "," +
+                            timeString + "," +
+                            prevIsoValue + "," +
+                            prevExposureCompensationValue + "," +
+                            azimuthValue + "," +
+                            pitchValue + "," +
+                            rollValue + "," +
+                            currentTimestamp + "," +
+                            currentAltitude + "," +
+                            currentLatitude + "," +
+                            currentLongitude + "," +
+                            currentGPSaccuracy + "/r/n";
         try {
             FileOutputStream fos = new FileOutputStream(dataFile, true);
             fos.write(timeString.getBytes());
@@ -1140,14 +1176,14 @@ public class MainActivity extends Activity
         Camera.Parameters params = mCamera.getParameters();
         prevExposureCompensationValue = params.getExposureCompensation();
         prevIsoValue = params.get("iso");
-        recordData(prevIsoValue + "," + prevExposureCompensationValue);
+        //recordData(prevIsoValue + "," + prevExposureCompensationValue);
         //Toast.makeText(getBaseContext(), prevExposureCompensationValue, Toast.LENGTH_SHORT).show(); // debugging purposes
         //Toast.makeText(getBaseContext(), prevIsoValue, Toast.LENGTH_SHORT).show(); // debugging purposes
     }
 
-    public void updateCameraParameters()
+    public void updateCameraParameters(File pictureFile)
     {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo)
-        evaluatePreviousImage(); // should return new values for exposure comp and iso
+        evaluatePreviousImage(pictureFile); // should return new values for exposure comp and iso
 
         Camera.Parameters params = mCamera.getParameters();
         if (testBit > 0){
@@ -1174,7 +1210,7 @@ public class MainActivity extends Activity
         //** Toast.makeText(getBaseContext(), testParams.get("iso"), Toast.LENGTH_SHORT).show(); // debugging purposes
     }
 
-    public void evaluatePreviousImage()
+    public void evaluatePreviousImage(File pictureFile)
     { // Once the evaluation algorithms are settled to measure jitter, noise, and exposure we will implement here
 
         // open/find previous image, how to get previous image?
