@@ -453,20 +453,35 @@ public class MainActivity extends Activity
 	{
 		// Do Nothing
 	}
-	
-	public void on()
+
+	public void addGpsToImg()
 	{
 		Camera.Parameters params = mCamera.getParameters();
-
 		// Set current GPS parameters
 		if(currentLocation != null) {
 			params.setGpsAltitude(currentLocation.getAltitude());
 			params.setGpsLatitude(currentLocation.getLatitude());
 			params.setGpsLongitude(currentLocation.getLongitude());
 			params.setGpsTimestamp(currentLocation.getTime()/1000);		// setGpsTimestamp takes seconds, not milliseconds (returned by getTime()
+			//params.setGpsProcessingMethod(currentLocation.getProvider());
+			//Toast.makeText(getBaseContext(), "Added GPS data", Toast.LENGTH_SHORT).show();
 		}
-
 		mCamera.setParameters(params);
+	}
+
+	public void on()
+	{
+		if(currentLocation != null) {
+			Camera.Parameters params = mCamera.getParameters();
+
+			// Set current GPS parameters
+			params.setGpsAltitude(currentLocation.getAltitude());
+			params.setGpsLatitude(currentLocation.getLatitude());
+			params.setGpsLongitude(currentLocation.getLongitude());
+			params.setGpsTimestamp(currentLocation.getTime()/1000);		// setGpsTimestamp takes seconds, not milliseconds (returned by getTime()
+
+			mCamera.setParameters(params);
+		}
 	}
 
 	public void addSensorDataToImg(File pictureFile)
@@ -760,7 +775,7 @@ public class MainActivity extends Activity
 
 	    // Check whether the new location fix is more or less accurate
 	    int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-	    boolean isLessAccurate = accuracyDelta > 0;
+	    boolean isLessAccurate = accuracyDelta > DISTANCE_TO_TRAVEL;
 	    boolean isMoreAccurate = accuracyDelta < 0;
 	    boolean isSignificantlyLessAccurate = accuracyDelta > 200;
 
@@ -1108,13 +1123,14 @@ public class MainActivity extends Activity
 
     public void initDataFile()
     {   // NOTE: Column titles aren't getting recorded, not sure why
-        //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), storeDir);
         dataFile = new File(mediaStorageDir.getPath() + File.separator +
                 "DATA_"+ timeStamp + ".csv");
-        String titleString = "FILENAME,TIME,ISO,EXPCOMP,AZIMUTH,PITCH,ROLL,GPS TIME,ALTITUDE,LATITUDE,LONGITUDE,GPS ACCURACY/r/n" //"Time Stamp," + colTitles + "\n";
-        try {
+        String titleString;   //"Time Stamp," + colTitles + "\n";
+		titleString = "FILENAME,TIME,ISO,EXPCOMP,AZIMUTH,PITCH,ROLL,GPS TIME,ALTITUDE,LATITUDE,LONGITUDE,GPS ACCURACY/r/n";
+		try {
             FileOutputStream fos = new FileOutputStream(dataFile, true);
             fos.write(titleString.getBytes());
             fos.close();
@@ -1136,13 +1152,15 @@ public class MainActivity extends Activity
         CharSequence pitchValue = mPitchView.getText();
         CharSequence rollValue = mRollView.getText();
 
-        String fileName = pictureFile.getName();
+        if (currentLocation == null){
+            return;
+        }
 
-        currentAltitude = currentLocation.getAltitude();
-        currentLatitude = currentLocation.getLatitude();
-        currentLongitude = currentLocation.getLongitude();
-        currentTimestamp = currentLocation.getTime();
-        currentGPSaccuracy = currentLocation.getAccuracy();
+        double currentAltitude = currentLocation.getAltitude();
+        double currentLatitude = currentLocation.getLatitude();
+		double currentLongitude = currentLocation.getLongitude();
+		double currentTimestamp = currentLocation.getTime();
+		double currentGPSaccuracy = currentLocation.getAccuracy();
         //recordData(prevIsoValue + "," + prevExposureCompensationValue);
 
         String dataString = pictureFile + "," +

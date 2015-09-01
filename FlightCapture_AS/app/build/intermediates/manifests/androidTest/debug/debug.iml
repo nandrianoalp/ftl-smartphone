@@ -4,30 +4,6 @@
     <facet type="android" name="Android">
       <configuration />
     </facet>
-    <facet type="android" name="Android2">
-      <configuration />
-    </facet>
-    <facet type="android" name="Android3">
-      <configuration />
-    </facet>
-    <facet type="android" name="Android4">
-      <configuration />
-    </facet>
-    <facet type="android" name="Android5">
-      <configuration />
-    </facet>
-    <facet type="android" name="Android6">
-      <configuration />
-    </facet>
-    <facet type="android" name="Android7">
-      <configuration />
-    </facet>
-    <facet type="android" name="Android8">
-      <configuration />
-    </facet>
-    <facet type="android" name="Android9">
-      <configuration />
-    </facet>
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
@@ -38,4 +14,3 @@
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
-

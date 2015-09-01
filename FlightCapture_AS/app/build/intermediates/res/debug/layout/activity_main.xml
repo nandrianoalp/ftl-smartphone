@@ -243,4 +243,4 @@
             android:onClick="onSnapClick"
             android:text="@string/snapPic" />
     </RelativeLayout>
-</RelativeLayout><!-- From: file:/C:/Users/TexMex657/Documents/GitHub/ftl-smartphone__idc/FlightCapture_AS/app/src/main/res/layout/activity_main.xml -->
+</RelativeLayout><!-- From: file:/C:/Users/JEREMYD/Documents/GitHub/ftl-smartphone/FlightCapture_AS/app/src/main/res/layout/activity_main.xml -->
