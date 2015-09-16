@@ -493,6 +493,10 @@ public class MainActivity extends Activity
 		CharSequence pitchValue = mPitchView.getText();
 		CharSequence rollValue = mRollView.getText();
 
+        String accuracyString = "Accuracy: " + Float.toString(currentLocation.getAccuracy()) + ';';
+        String providerString = "Provider: " + currentLocation.getProvider() + ';';
+        String speedString = "Speed: " + Float.toString(currentLocation.getSpeed()) + ';';
+
 		// Combine sensor data into single string
 		/*
 		String customEXIF = "Azimuth: " + azimuthValue + "; Pitch: " + pitchValue +
@@ -562,6 +566,12 @@ public class MainActivity extends Activity
 		writeToFile(pitchString);
 		writeToFile("\r\n");
 		writeToFile(rollString);
+        writeToFile("\r\n");
+        writeToFile(speedString);
+        writeToFile("\r\n");
+        writeToFile(accuracyString);
+        writeToFile("\r\n");
+        writeToFile(providerString);
 		writeToFile("\r\n");
 		writeToFile("\r\n");
 		// */
@@ -1129,7 +1139,7 @@ public class MainActivity extends Activity
         dataFile = new File(mediaStorageDir.getPath() + File.separator +
                 "DATA_"+ timeStamp + ".csv");
         String titleString;   //"Time Stamp," + colTitles + "\n";
-		titleString = "FILENAME,TIME,ISO,EXPCOMP,AZIMUTH,PITCH,ROLL,GPS TIME,ALTITUDE,LATITUDE,LONGITUDE,GPS ACCURACY/r/n";
+		titleString = "FILENAME,TIME,ISO,EXPCOMP,AZIMUTH,PITCH,ROLL,GPS TIME,ALTITUDE,LATITUDE,LONGITUDE,GPS ACCURACY,SPEED,PROVIDER,/r/n";
 		try {
             FileOutputStream fos = new FileOutputStream(dataFile, true);
             fos.write(titleString.getBytes());
@@ -1162,6 +1172,8 @@ public class MainActivity extends Activity
 		double currentTimestamp = currentLocation.getTime();
 		double currentGPSaccuracy = currentLocation.getAccuracy();
         //recordData(prevIsoValue + "," + prevExposureCompensationValue);
+        String providerString = currentLocation.getProvider();
+        double speed = currentLocation.getSpeed();
 
         String dataString = pictureFile + "," +
                             timeString + "," +
@@ -1174,7 +1186,9 @@ public class MainActivity extends Activity
                             currentAltitude + "," +
                             currentLatitude + "," +
                             currentLongitude + "," +
-                            currentGPSaccuracy + "/r/n";
+                            currentGPSaccuracy + "," +
+                            speed + "," +
+                            providerString + "," + "/r/n";
         try {
             FileOutputStream fos = new FileOutputStream(dataFile, true);
             fos.write(timeString.getBytes());
