@@ -402,7 +402,7 @@ public class MainActivity extends Activity
         }
 
 		// Add other sensor information to image
-		// addSensorDataToImg(pictureFile); Replace with recordDataFile by Gregg
+		addSensorDataToImg(pictureFile); // Temp doing both .txt & .csv in case one doesn't work. Replace with recordDataFile by Gregg
 
         recordCameraParameters(); // update the camera parameters saved in global variables
         recordDataFile(pictureFile); // add a line item to the CSV data file for this image
