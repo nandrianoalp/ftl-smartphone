@@ -487,15 +487,43 @@ public class MainActivity extends Activity
 	public void addSensorDataToImg(File pictureFile)
 	{
 		// Variable declaration & initialization
-		String fileName = pictureFile.getName();
+		String fileName = "File: " + pictureFile.getName() + ';';
 		String filePath = pictureFile.getAbsolutePath();
 		CharSequence azimuthValue = mAzimuthView.getText();;
 		CharSequence pitchValue = mPitchView.getText();
 		CharSequence rollValue = mRollView.getText();
 
-        String accuracyString = "Accuracy: " + Float.toString(currentLocation.getAccuracy()) + ';';
-        String providerString = "Provider: " + currentLocation.getProvider() + ';';
-        String speedString = "Speed: " + Float.toString(currentLocation.getSpeed()) + ';';
+        String timeStamp = "Time: " + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ';';
+        String prevIsoString = "Prev Iso Value: " + prevIsoValue + ';';
+        String prevExpString = "Prev Exp Comp Value: " + prevExposureCompensationValue + ';';
+
+        String currTimeString = "Current Time: -1;";
+        String altString = "Altitude: -1;";
+        String latString = "Latitude: -1;";
+        String lonString = "Longitude: -1;";
+        String accuracyString = "Accuracy: -1;";
+        String speedString = "Speed: -1;";
+        String providerString = "Provider: NA;";
+
+		if(currentLocation != null) {
+			if (currentLocation.hasAccuracy()) {
+                accuracyString = "Accuracy: " + currentLocation.getAccuracy() + ';';
+            }
+
+			if (currentLocation.hasSpeed()) {
+                speedString = "Speed: " + currentLocation.getSpeed() + ';';
+			}
+
+            if (currentLocation.hasAltitude()) {
+                altString = "Altitude: " + currentLocation.getAltitude() + ';';
+            }
+
+            currTimeString = "Current Time: " + currentLocation.getTime() + ';';
+            latString = "Latitude: " + currentLocation.getLatitude() + ';';
+            lonString = "Longitude: " + currentLocation.getLongitude() + ';';
+            providerString = "Provider: " + currentLocation.getProvider() + ';';
+
+        }
 
 		// Combine sensor data into single string
 		/*
@@ -560,6 +588,12 @@ public class MainActivity extends Activity
 		// /*
 		// Write data to text file
 		writeToFile(fileName);
+        writeToFile("\r\n");
+        writeToFile(timeStamp);
+        writeToFile("\r\n");
+        writeToFile(prevIsoString);
+        writeToFile("\r\n");
+        writeToFile(prevExpString);
 		writeToFile("\r\n");
 		writeToFile(azimuthString);
 		writeToFile("\r\n");
@@ -567,14 +601,23 @@ public class MainActivity extends Activity
 		writeToFile("\r\n");
 		writeToFile(rollString);
         writeToFile("\r\n");
-        writeToFile(speedString);
+        writeToFile(currTimeString);
+        writeToFile("\r\n");
+        writeToFile(altString);
+        writeToFile("\r\n");
+        writeToFile(latString);
+        writeToFile("\r\n");
+        writeToFile(lonString);
         writeToFile("\r\n");
         writeToFile(accuracyString);
+        writeToFile("\r\n");
+        writeToFile(speedString);
         writeToFile("\r\n");
         writeToFile(providerString);
 		writeToFile("\r\n");
 		writeToFile("\r\n");
-		// */
+
+        // */
 	}
 
 	private void writeToFile(String data) {
@@ -801,7 +844,8 @@ public class MainActivity extends Activity
 	    } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
 	        return true;
 	    }
-	    return false;
+	    //return false;
+        return true;
 	}
 
 	// Checks whether two providers are the same
