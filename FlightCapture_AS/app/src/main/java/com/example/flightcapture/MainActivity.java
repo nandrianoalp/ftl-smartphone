@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -41,6 +42,9 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.media.ExifInterface;
+
+import org.apache.http.impl.io.ContentLengthInputStream;
 
 public class MainActivity extends Activity 
 		implements SurfaceHolder.Callback, Camera.ShutterCallback, Camera.PictureCallback,
@@ -141,6 +145,7 @@ public class MainActivity extends Activity
         // For now I can use the keep screen on flag and leave in portrait to keep the app working
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);		// Band-aid
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);	// Band-aid
+
 
 		// ADDED SENSOR CODE
 		gyroOrientation[0] = 0.0f;
@@ -304,6 +309,9 @@ public class MainActivity extends Activity
 			// Catch and continue with defaults
 		}
 		Toast.makeText(getBaseContext(), "Time Mode", Toast.LENGTH_SHORT).show();
+
+        initCameraParameters();
+        initDataFile();
 		continuousCapture();
 	}
 	
@@ -328,6 +336,9 @@ public class MainActivity extends Activity
 			// Catch and continue with defaults
 		}
 		Toast.makeText(getBaseContext(), "Distance Mode", Toast.LENGTH_SHORT).show();
+
+        initCameraParameters();
+        initDataFile();
 		continuousCapture();
 	}
 	
@@ -369,12 +380,13 @@ public class MainActivity extends Activity
 	@Override
 	public void onPictureTaken(byte[] data, Camera camera)
 	{
+
 		//Add GPS properties to image
 		addGpsToImg();
-		
+
 		//Store the picture
-        File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
-        if (pictureFile == null){
+		File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, this);
+		if (pictureFile == null){
             Log.d(TAG, "Error creating media file, check storage permissions.");
             return;
         }
@@ -388,7 +400,15 @@ public class MainActivity extends Activity
         } catch (IOException e) {
             Log.d(TAG, "Error accessing file: " + e.getMessage());
         }
-		
+
+		// Add other sensor information to image
+		addSensorDataToImg(pictureFile); // Temp doing both .txt & .csv in case one doesn't work. Replace with recordDataFile by Gregg
+
+        recordCameraParameters(); // update the camera parameters saved in global variables
+        recordDataFile(pictureFile); // add a line item to the CSV data file for this image
+
+        updateCameraParameters(pictureFile); // evaluate the image just take and correct settings for next image
+
 		//Must restart preview
 		camera.startPreview();
 		CAMERA_READY = true;
@@ -433,7 +453,7 @@ public class MainActivity extends Activity
 	{
 		// Do Nothing
 	}
-	
+
 	public void addGpsToImg()
 	{
 		Camera.Parameters params = mCamera.getParameters();
@@ -443,10 +463,215 @@ public class MainActivity extends Activity
 			params.setGpsLatitude(currentLocation.getLatitude());
 			params.setGpsLongitude(currentLocation.getLongitude());
 			params.setGpsTimestamp(currentLocation.getTime()/1000);		// setGpsTimestamp takes seconds, not milliseconds (returned by getTime()
-		}		
+			//params.setGpsProcessingMethod(currentLocation.getProvider());
+			//Toast.makeText(getBaseContext(), "Added GPS data", Toast.LENGTH_SHORT).show();
+		}
 		mCamera.setParameters(params);
 	}
-	
+
+	public void on()
+	{
+		if(currentLocation != null) {
+			Camera.Parameters params = mCamera.getParameters();
+
+			// Set current GPS parameters
+			params.setGpsAltitude(currentLocation.getAltitude());
+			params.setGpsLatitude(currentLocation.getLatitude());
+			params.setGpsLongitude(currentLocation.getLongitude());
+			params.setGpsTimestamp(currentLocation.getTime()/1000);		// setGpsTimestamp takes seconds, not milliseconds (returned by getTime()
+
+			mCamera.setParameters(params);
+		}
+	}
+
+	public void addSensorDataToImg(File pictureFile)
+	{
+		// Variable declaration & initialization
+		String fileName = "File: " + pictureFile.getName() + ';';
+		String filePath = pictureFile.getAbsolutePath();
+		CharSequence azimuthValue = mAzimuthView.getText();;
+		CharSequence pitchValue = mPitchView.getText();
+		CharSequence rollValue = mRollView.getText();
+
+        String timeStamp = "Time: " + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ';';
+        String prevIsoString = "Prev Iso Value: " + prevIsoValue + ';';
+        String prevExpString = "Prev Exp Comp Value: " + prevExposureCompensationValue + ';';
+
+        String currTimeString = "Current Time: -1;";
+        String altString = "Altitude: -1;";
+        String latString = "Latitude: -1;";
+        String lonString = "Longitude: -1;";
+        String accuracyString = "Accuracy: -1;";
+        String speedString = "Speed: -1;";
+        String providerString = "Provider: NA;";
+
+		if(currentLocation != null) {
+			if (currentLocation.hasAccuracy()) {
+                accuracyString = "Accuracy: " + currentLocation.getAccuracy() + ';';
+            }
+
+			if (currentLocation.hasSpeed()) {
+                speedString = "Speed: " + currentLocation.getSpeed() + ';';
+			}
+
+            if (currentLocation.hasAltitude()) {
+                altString = "Altitude: " + currentLocation.getAltitude() + ';';
+            }
+
+            currTimeString = "Current Time: " + currentLocation.getTime() + ';';
+            latString = "Latitude: " + currentLocation.getLatitude() + ';';
+            lonString = "Longitude: " + currentLocation.getLongitude() + ';';
+            providerString = "Provider: " + currentLocation.getProvider() + ';';
+
+        }
+
+		// Combine sensor data into single string
+		/*
+		String customEXIF = "Azimuth: " + azimuthValue + "; Pitch: " + pitchValue +
+				"; Roll: " + rollValue + ';';
+		*/
+		// /*
+		String azimuthString = "Azimuth: " + azimuthValue + ';';
+		String pitchString = "Pitch: " + pitchValue + ';';
+		String rollString = "Roll: " + rollValue + ';';
+		// */
+
+		/*
+		// Write sensor data to EXIF
+		try {
+			ExifInterface exif = new ExifInterface(filePath);
+
+			// Read all GPS attributes
+			double altitude = currentLocation.getAltitude();
+			double latitude = currentLocation.getLatitude();
+			double longitude = currentLocation.getLongitude();
+			double time = currentLocation.getTime() / 1000;
+
+			// Apparently exifInterface will not read the GPS tags in EXIF correctly & instead
+			// returns null values
+			String gpsAlt = String.valueOf(altitude);
+			String gpsLat = String.valueOf(latitude);
+			String gpsLong = String.valueOf(longitude);
+			String gpsTimeStamp = String.valueOf(time);
+
+			/*
+			String gpsLatRef = exif.getAttribute(exif.TAG_GPS_LATITUDE_REF);
+			String gpsLat = exif.getAttribute(exif.TAG_GPS_LATITUDE);
+			String gpsLongRef = exif.getAttribute(exif.TAG_GPS_LONGITUDE_REF);
+			String gpsLong = exif.getAttribute(exif.TAG_GPS_LONGITUDE);
+			String gpsAltRef = exif.getAttribute(exif.TAG_GPS_ALTITUDE_REF);
+			String gpsAlt = exif.getAttribute(exif.TAG_GPS_ALTITUDE);
+			String gpsTimeStamp = exif.getAttribute(exif.TAG_GPS_TIMESTAMP);
+			String gpsDateStamp = exif.getAttribute(exif.TAG_GPS_DATESTAMP);
+
+			// Set all GPS attributes
+			// exif.setAttribute("GPS Latitude Ref",gpsLatRef);
+			// exif.setAttribute(exif.TAG_GPS_LATITUDE,gpsLat);
+			// exif.setAttribute("GPS Longitude Ref",gpsLongRef);
+			// exif.setAttribute(exif.TAG_GPS_LONGITUDE,gpsLong);
+			// exif.setAttribute("GPS Altitude Ref",gpsAltRef);
+			// exif.setAttribute(exif.TAG_GPS_ALTITUDE,gpsAlt);
+			// exif.setAttribute(exif.TAG_GPS_TIMESTAMP,gpsTimeStamp);
+			// exif.setAttribute("GPS Date Stamp",gpsDateStamp);
+
+			// Set azimuth, pitch, & roll
+			// exif.setAttribute("UserComment", customEXIF);
+
+			// Save all attributes
+			// exif.saveAttributes();
+
+		} catch (IOException e) {
+			Log.d(TAG, "Error accessing file: " + filePath + " " + e.getMessage());
+		}
+		*/
+
+		// /*
+		// Write data to text file
+		writeToFile(fileName);
+        writeToFile("\r\n");
+        writeToFile(timeStamp);
+        writeToFile("\r\n");
+        writeToFile(prevIsoString);
+        writeToFile("\r\n");
+        writeToFile(prevExpString);
+		writeToFile("\r\n");
+		writeToFile(azimuthString);
+		writeToFile("\r\n");
+		writeToFile(pitchString);
+		writeToFile("\r\n");
+		writeToFile(rollString);
+        writeToFile("\r\n");
+        writeToFile(currTimeString);
+        writeToFile("\r\n");
+        writeToFile(altString);
+        writeToFile("\r\n");
+        writeToFile(latString);
+        writeToFile("\r\n");
+        writeToFile(lonString);
+        writeToFile("\r\n");
+        writeToFile(accuracyString);
+        writeToFile("\r\n");
+        writeToFile(speedString);
+        writeToFile("\r\n");
+        writeToFile(providerString);
+		writeToFile("\r\n");
+		writeToFile("\r\n");
+
+        // */
+	}
+
+	private void writeToFile(String data) {
+		// Declare & initialize variables
+		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+				Environment.DIRECTORY_PICTURES), storeDir);
+
+		File sensorDataFile = new File(mediaStorageDir.getAbsolutePath() + File.separator + "sensorData.txt");
+
+		// Create sensor data file if it does now exist
+		if(!sensorDataFile.exists()) {
+			try {
+				sensorDataFile.createNewFile();
+				sensorDataFile.setWritable(true);
+			}
+			catch (IOException e) {
+				Log.e("Exception", "File creation failed: " + e.toString());
+			}
+		}
+
+		/*
+		try {
+			OutputStreamWriter fileOut = new OutputStreamWriter(sensorDataFile, Context.MODE_APPEND);
+			fileOut.write(data);
+			fileOut.close();
+		}
+		catch (IOException e) {
+			Log.e("Exception", "File write failed: " + e.toString());
+		}
+		*/
+
+		// /*
+		try {
+			/*
+			FileOutputStream fos = openFileOutput(sensorDataFile.getAbsolutePath(),getApplicationContext().MODE_APPEND);
+
+			fos.write(data.getBytes());
+			fos.close();
+			*/
+
+			FileOutputStream fOut = new FileOutputStream(sensorDataFile.getPath(),true);
+			OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+
+			myOutWriter.append(data);
+			myOutWriter.close();
+			fOut.close();
+
+		} catch (IOException e) {
+			Log.e("Exception", "File write failed: " + e.toString());
+		}
+		// */
+
+	}
+
 	// Create a File for saving an image or video
 	private static File getOutputMediaFile(int type, Context context){
 	    // To be safe, you should check that the SDCard is mounted
@@ -603,7 +828,7 @@ public class MainActivity extends Activity
 
 	    // Check whether the new location fix is more or less accurate
 	    int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-	    boolean isLessAccurate = accuracyDelta > 0;
+	    boolean isLessAccurate = accuracyDelta > DISTANCE_TO_TRAVEL;
 	    boolean isMoreAccurate = accuracyDelta < 0;
 	    boolean isSignificantlyLessAccurate = accuracyDelta > 200;
 
@@ -619,7 +844,8 @@ public class MainActivity extends Activity
 	    } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
 	        return true;
 	    }
-	    return false;
+	    //return false;
+        return true;
 	}
 
 	// Checks whether two providers are the same
@@ -910,5 +1136,165 @@ public class MainActivity extends Activity
 		}
 	};
 	// END ADDED SENSOR CODE
+
+
+    /* GREGG'S MERGE */
+    public int prevExposureCompensationValue;
+    public String prevIsoValue;
+    public int maxExposureCompensationValue;
+    public int minExposureCompensationValue;
+    public int testBit = 0; // used to test camera controls, used to alternate ISO settings
+    public File dataFile;
+
+
+    public void initCameraParameters()
+    {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo) [Note: I believe that the preview should be started first]
+
+        //** INITIALIZE CAMERA PARAMETERS **//
+
+        //Retrieve current camera parameter settings
+        Camera.Parameters params = mCamera.getParameters(); // Request Current Paramaters
+
+        // Edit camera parameter settings
+        // params.setAutoExposureLock(true); // Lock Auto Exposure so it can be controlled per snap, CHECK MIN VERSION
+        // params.setAutoWhiteBalanceLock(true); // Lock AWB so we can post process the images, CHECK MIN VERSION
+        // params.setWhiteBalance("no adjustment"); //this string value could we wrong, DECIDED TO USE AUTO WHITE BALANCE
+        // Set GPS Altitude: 7/26/2015, waiting for KML group to decide GPS/ALT implementation. Remember to look at current addGpsToImg() etc. implementation
+        params.setFocusMode("FOCUS_MOD_EDOF"); // set to continuous focus mode
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        storeDir = "TimePics_" + timeStamp;// set directory to save file (if external remember to put in manifest file)
+        //params.setPictureFormat(256); //256 represents JPEG format, IS THIS NECESSARY?
+
+        maxExposureCompensationValue = params.getMaxExposureCompensation();
+        minExposureCompensationValue = params.getMinExposureCompensation();
+
+        recordCameraParameters();
+
+        //Set camera settings to modified values
+        //** mCamera.setParameters(params); 8/8/15: REMOVED BECUASE IT CRASHED THE APP!
+        //Toast.makeText(getBaseContext(), "Camera Settings Initialized", Toast.LENGTH_SHORT).show();
+    }
+
+    public void initDataFile()
+    {   // NOTE: Column titles aren't getting recorded, not sure why
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), storeDir);
+        dataFile = new File(mediaStorageDir.getPath() + File.separator +
+                "DATA_"+ timeStamp + ".csv");
+        String titleString;   //"Time Stamp," + colTitles + "\n";
+		titleString = "FILENAME,TIME,ISO,EXPCOMP,AZIMUTH,PITCH,ROLL,GPS TIME,ALTITUDE,LATITUDE,LONGITUDE,GPS ACCURACY,SPEED,PROVIDER,/r/n";
+		try {
+            FileOutputStream fos = new FileOutputStream(dataFile, true);
+            fos.write(titleString.getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+        }
+
+    }
+
+    public void recordDataFile(File pictureFile)
+    {   // Records a data file to the same directory as the pictures
+        // FINISH BY ADDING INPUTS FOR RECORDING!!!!
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeString = timeStamp + "," ;
+
+        CharSequence azimuthValue = mAzimuthView.getText();;
+        CharSequence pitchValue = mPitchView.getText();
+        CharSequence rollValue = mRollView.getText();
+
+        if (currentLocation == null){
+            return;
+        }
+
+        double currentAltitude = currentLocation.getAltitude();
+        double currentLatitude = currentLocation.getLatitude();
+		double currentLongitude = currentLocation.getLongitude();
+		double currentTimestamp = currentLocation.getTime();
+		double currentGPSaccuracy = currentLocation.getAccuracy();
+        //recordData(prevIsoValue + "," + prevExposureCompensationValue);
+        String providerString = currentLocation.getProvider();
+        double speed = currentLocation.getSpeed();
+
+        String dataString = pictureFile + "," +
+                            timeString + "," +
+                            prevIsoValue + "," +
+                            prevExposureCompensationValue + "," +
+                            azimuthValue + "," +
+                            pitchValue + "," +
+                            rollValue + "," +
+                            currentTimestamp + "," +
+                            currentAltitude + "," +
+                            currentLatitude + "," +
+                            currentLongitude + "," +
+                            currentGPSaccuracy + "," +
+                            speed + "," +
+                            providerString + "," + "/r/n";
+        try {
+            FileOutputStream fos = new FileOutputStream(dataFile, true);
+            fos.write(timeString.getBytes());
+            fos.write(dataString.getBytes());
+            fos.write(("\n").getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+        }
+
+    }
+
+    public void recordCameraParameters()
+    { // Called immediately after the photo is taken to record current parameters (b/ potentially in constant flux during preview)
+        Camera.Parameters params = mCamera.getParameters();
+        prevExposureCompensationValue = params.getExposureCompensation();
+        prevIsoValue = params.get("iso");
+        //recordData(prevIsoValue + "," + prevExposureCompensationValue);
+        //Toast.makeText(getBaseContext(), prevExposureCompensationValue, Toast.LENGTH_SHORT).show(); // debugging purposes
+        //Toast.makeText(getBaseContext(), prevIsoValue, Toast.LENGTH_SHORT).show(); // debugging purposes
+    }
+
+    public void updateCameraParameters(File pictureFile)
+    {//Initialize Camera Settings (should be called before starting capturing sequence, before first photo)
+        evaluatePreviousImage(pictureFile); // should return new values for exposure comp and iso
+
+        Camera.Parameters params = mCamera.getParameters();
+        if (testBit > 0){
+            params.set("iso", "200");
+            // Toast.makeText(getBaseContext(), "ISO: 200", Toast.LENGTH_SHORT).show();
+            testBit = 0;
+        } else {
+            params.set("iso", "1600");
+            // Toast.makeText(getBaseContext(), "ISO: 1600", Toast.LENGTH_SHORT).show();
+            testBit = 1;
+            //testBit = 0;// for testing exp comp alone 8/8/15
+        }
+        if (prevExposureCompensationValue == minExposureCompensationValue) {
+            params.setExposureCompensation(maxExposureCompensationValue);
+            // Toast.makeText(getBaseContext(), ((maxExposureCompensationValue) + ""), Toast.LENGTH_SHORT).show();
+        } else {
+            params.setExposureCompensation(prevExposureCompensationValue - 1); // params.getExposureCompensationStep());
+            // Toast.makeText(getBaseContext(), ((prevExposureCompensationValue - 1) + ""), Toast.LENGTH_SHORT).show();
+        }
+        mCamera.setParameters(params);
+
+        //** Camera.Parameters testParams = mCamera.getParameters();
+        //** Toast.makeText(getBaseContext(), testParams.getExposureCompensation(), Toast.LENGTH_SHORT).show(); // debugging purposes
+        //** Toast.makeText(getBaseContext(), testParams.get("iso"), Toast.LENGTH_SHORT).show(); // debugging purposes
+    }
+
+    public void evaluatePreviousImage(File pictureFile)
+    { // Once the evaluation algorithms are settled to measure jitter, noise, and exposure we will implement here
+
+        // open/find previous image, how to get previous image?
+
+        // Implement algorithm or call library here
+
+        return;// calculate and return new exposure comp and iso values
+    }
+
 
 }
